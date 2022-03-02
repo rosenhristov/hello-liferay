@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -33,7 +32,7 @@ public class GuestbookTable extends BaseTable<GuestbookTable> {
 	public static final GuestbookTable INSTANCE = new GuestbookTable();
 
 	public final Column<GuestbookTable, Long> mvccVersion = createColumn(
-		"mvccVersion", Long.class, Types.BIGINT, Column.FLAG_NULLITY);
+			"mvccVersion", Long.class, Types.BIGINT, Column.FLAG_NULLITY);
 	public final Column<GuestbookTable, String> uuid = createColumn(
 		"uuid_", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<GuestbookTable, Long> guestbookId = createColumn(

@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,6 +13,9 @@
 
 package com.liferay.docs.guestbook.service.impl;
 
+import com.liferay.docs.guestbook.exception.GuestbookEntryEmailException;
+import com.liferay.docs.guestbook.exception.GuestbookEntryMessageException;
+import com.liferay.docs.guestbook.exception.GuestbookEntryNameException;
 import com.liferay.docs.guestbook.model.GuestbookEntry;
 import com.liferay.docs.guestbook.service.base.GuestbookEntryLocalServiceBaseImpl;
 import com.liferay.headless.commerce.admin.account.dto.v1_0.User;
@@ -25,27 +27,25 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.util.Date;
 import java.util.List;
 
+import com.liferay.portal.kernel.util.Validator;
 import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Rosen Hristov
  */
-@Component(
-	property = "model.class.name=com.liferay.docs.guestbook.model.GuestbookEntry",
-	service = AopService.class
-)
+@Component(property = "model.class.name=com.liferay.docs.guestbook.model.GuestbookEntry", service = AopService.class)
 public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBaseImpl {
-	
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId) {
+
+	public List<GuestbookEntry> getGuestbookEntries(int groupId, int guestbookId) {
 		return guestbookEntryPersistence.findByG_G(groupId, guestbookId);
 	}
 
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId, int start, 
-													int end) throws SystemException {
+	public List<GuestbookEntry> getGuestbookEntriesInRange(long groupId, long guestbookId, int start, int end) throws SystemException {
 		return guestbookEntryPersistence.findByG_G(groupId, guestbookId, start, end);
 	}
 
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId, int start, int end, OrderByComparator<GuestbookEntry> obc) {
+	public List<GuestbookEntry> getGuestbookEntriesOrdered(long groupId, long guestbookId, int start, int end,
+														   OrderByComparator<GuestbookEntry> obc) {
 		return guestbookEntryPersistence.findByG_G(groupId, guestbookId, start, end, obc);
 	}
 
@@ -56,10 +56,10 @@ public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBa
 	public int getGuestbookEntriesCount(long groupId, long guestbookId) {
 		return guestbookEntryPersistence.countByG_G(groupId, guestbookId);
 	}
-	
+
+	@Override
 	public GuestbookEntry addGuestbookEntry(long userId, long guestbookId, String name, String email,
-											String message, ServiceContext serviceContext) 
-													throws PortalException {
+											String message, ServiceContext serviceContext) throws PortalException {
 		long groupId = serviceContext.getScopeGroupId();
 		User user = (User) userLocalService.getUserById(userId);
 		Date now = new Date();
@@ -70,8 +70,8 @@ public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBa
 		entry.setUuid(serviceContext.getUuid());
 		entry.setUserId(userId);
 		entry.setGroupId(groupId);
-		entry.setCompanyId(user.getCompanyId());
-		entry.setUserName(user.getFullName());
+		entry.setCompanyId(user.getId());
+		entry.setUserName(user.getFirstName() + " " + user.getLastName());
 		entry.setCreateDate(serviceContext.getCreateDate(now));
 		entry.setModifiedDate(serviceContext.getModifiedDate(now));
 		entry.setExpandoBridgeAttributes(serviceContext);
@@ -87,19 +87,19 @@ public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBa
 		return entry;
 	}
 	
-	public GuestbookEntry updateGuestbookEntry(long userId, long guestbookId, long entryId, String name, 
-												String email, String message, ServiceContext serviceContext)
-		throws PortalException, SystemException {
+	public GuestbookEntry updateGuestbookEntry(long userId, long guestbookId, long entryId, String name, String email,
+											   String message, ServiceContext serviceContext)
+			throws PortalException, SystemException {
 
 		Date now = new Date();
 		validate(name, email, message);
 
 		GuestbookEntry entry = guestbookEntryPersistence.findByPrimaryKey(entryId);
 		
-		User user = userLocalService.getUserById(userId);
+		User user = (User) userLocalService.getUserById(userId);
 
 		entry.setUserId(userId);
-		entry.setUserName(user.getFullName());
+		entry.setUserName(((com.liferay.portal.kernel.model.User) user).getFullName());
 		entry.setModifiedDate(serviceContext.getModifiedDate(now));
 		entry.setName(name);
 		entry.setEmail(email);
@@ -113,7 +113,7 @@ public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBa
 		return entry;
 	}
 	
-	public GuestbookEntry deleteGuestbookEntry(GuestbookEntry entry) throws PortalException {
+	public GuestbookEntry deleteGuestbookEntry(GuestbookEntry entry) {
 			guestbookEntryPersistence.remove(entry);
 			return entry;
 	}
@@ -133,39 +133,5 @@ public class GuestbookEntryLocalServiceImpl extends GuestbookEntryLocalServiceBa
 		if (Validator.isNull(entry)) {
 			throw new GuestbookEntryMessageException();
 		}
-	}
-
-	@Override
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId, int start, int end)
-			throws SystemException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<GuestbookEntry> getGuestbookEntries(long groupId, long guestbookId, int start, int end,
-			OrderByComparator<GuestbookEntry> obc) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public GuestbookEntry addGuestbookEntry(long userId, long guestbookId, String name, String email, String message,
-			ServiceContext serviceContext) throws PortalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public GuestbookEntry updateGuestbookEntry(long userId, long guestbookId, long entryId, String name, String email,
-			String message, ServiceContext serviceContext) throws PortalException, SystemException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

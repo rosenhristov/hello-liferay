@@ -47,13 +47,13 @@ import java.util.logging.Logger;
 )
 public class GuestbookPortlet extends MVCPortlet {
 
-	private static final Logger LOGGER = Logger.getLogger(GuestbookPortlet.class.getName());
+	private static final Logger log = Logger.getLogger(GuestbookPortlet.class.getName());
 
 	@Reference
-	private GuestbookEntryLocalService _guestbookEntryLocalService;
+	private GuestbookEntryLocalService guestbookEntryLocalService;
 
 	@Reference
-	private GuestbookLocalService _guestbookLocalService;
+	private GuestbookLocalService guestbookLocalService;
 
 	@Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws IOException, PortletException {
@@ -61,9 +61,9 @@ public class GuestbookPortlet extends MVCPortlet {
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(Guestbook.class.getName(), renderRequest);
 			long groupId = serviceContext.getScopeGroupId();
 			long guestbookId = ParamUtil.getLong(renderRequest, "guestbookId");
-			List<Guestbook> guestbooks = _guestbookLocalService.getGuestbooks(groupId);
+			List<Guestbook> guestbooks = guestbookLocalService.getGuestbooks(groupId);
 			if (guestbooks.isEmpty()) {
-				Guestbook guestbook = _guestbookLocalService.addGuestbook(serviceContext.getUserId(), "Main", serviceContext);
+				Guestbook guestbook = guestbookLocalService.addGuestbook(serviceContext.getUserId(), "Main", serviceContext);
 				guestbookId = guestbook.getGuestbookId();
 			}
 			if (guestbookId == 0) {
@@ -83,11 +83,10 @@ public class GuestbookPortlet extends MVCPortlet {
 		String message = ParamUtil.getString(request, "message");
 		long guestbookId = ParamUtil.getLong(request, "guestbookId");
 		long entryId = ParamUtil.getLong(request, "entryId");
-
 		if (entryId > 0) {
 			try {
-				_guestbookEntryLocalService.updateGuestbookEntry(serviceContext.getUserId(), guestbookId, entryId,
-						userName, email, message, serviceContext);
+				guestbookEntryLocalService.updateGuestbookEntry(
+						serviceContext.getUserId(), guestbookId, entryId, userName, email, message, serviceContext);
 				response.setRenderParameter("guestbookId", Long.toString(guestbookId));
 			} catch (Exception e) {
 				System.out.println(e);
@@ -96,7 +95,7 @@ public class GuestbookPortlet extends MVCPortlet {
 			}
 		} else {
 			try {
-				_guestbookEntryLocalService.addGuestbookEntry(serviceContext.getUserId(), guestbookId, userName,
+				guestbookEntryLocalService.addGuestbookEntry(serviceContext.getUserId(), guestbookId, userName,
 						email, message, serviceContext);
 				response.setRenderParameter("guestbookId", Long.toString(guestbookId));
 			} catch (Exception e) {
@@ -113,9 +112,9 @@ public class GuestbookPortlet extends MVCPortlet {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(GuestbookEntry.class.getName(), request);
 		try {
 			response.setRenderParameter("guestbookId", Long.toString(guestbookId));
-			_guestbookEntryLocalService.deleteGuestbookEntry(entryId);
+			guestbookEntryLocalService.deleteGuestbookEntry(entryId);
 		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, "Exception occurred: ", e);
+			log.log(Level.SEVERE, "Exception occurred: ", e);
 		}
 	}
 }

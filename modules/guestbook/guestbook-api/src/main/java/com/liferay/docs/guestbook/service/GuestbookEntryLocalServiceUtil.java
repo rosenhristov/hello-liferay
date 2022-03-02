@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,9 +16,11 @@ package com.liferay.docs.guestbook.service;
 import com.liferay.docs.guestbook.model.GuestbookEntry;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.PersistedModel;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.io.Serializable;
@@ -34,17 +35,18 @@ import java.util.List;
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
+ * NOTE FOR DEVELOPERS:
+ *  Never modify this class directly. Add custom service methods to
+ *  <code>com.liferay.docs.guestbook.service.impl.GuestbookEntryLocalServiceImpl</code>
+ *  and rerun ServiceBuilder to regenerate this class.
+ *
  * @author Rosen Hristov
  * @see GuestbookEntryLocalService
  * @generated
  */
 public class GuestbookEntryLocalServiceUtil {
 
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify this class directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookEntryLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
-	 */
+	private static volatile GuestbookEntryLocalService _service;
 
 	/**
 	 * Adds the guestbook entry to the database. Also notifies the appropriate model listeners.
@@ -56,19 +58,13 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param guestbookEntry the guestbook entry
 	 * @return the guestbook entry that was added
 	 */
-	public static GuestbookEntry addGuestbookEntry(
-		GuestbookEntry guestbookEntry) {
-
+	public static GuestbookEntry addGuestbookEntry(GuestbookEntry guestbookEntry) {
 		return getService().addGuestbookEntry(guestbookEntry);
 	}
 
-	public static GuestbookEntry addGuestbookEntry(
-			long userId, long guestbookId, String name, String email,
-			String message, ServiceContext serviceContext)
-		throws PortalException {
-
-		return getService().addGuestbookEntry(
-			userId, guestbookId, name, email, message, serviceContext);
+	public static GuestbookEntry addGuestbookEntry(long userId, long guestbookId, String name, String email, String message, ServiceContext serviceContext) 
+			throws PortalException {
+		return getService().addGuestbookEntry(userId, guestbookId, name, email, message, serviceContext);
 	}
 
 	/**
@@ -84,10 +80,7 @@ public class GuestbookEntryLocalServiceUtil {
 	/**
 	 * @throws PortalException
 	 */
-	public static PersistedModel createPersistedModel(
-			Serializable primaryKeyObj)
-		throws PortalException {
-
+	public static PersistedModel createPersistedModel(Serializable primaryKeyObj) throws PortalException {
 		return getService().createPersistedModel(primaryKeyObj);
 	}
 
@@ -100,17 +93,10 @@ public class GuestbookEntryLocalServiceUtil {
 	 *
 	 * @param guestbookEntry the guestbook entry
 	 * @return the guestbook entry that was removed
+	 * @throws PortalException
 	 */
-	public static GuestbookEntry deleteGuestbookEntry(
-		GuestbookEntry guestbookEntry) {
-
+	public static GuestbookEntry deleteGuestbookEntry(GuestbookEntry guestbookEntry) throws PortalException {
 		return getService().deleteGuestbookEntry(guestbookEntry);
-	}
-
-	public static GuestbookEntry deleteGuestbookEntry(GuestbookEntry entry)
-		throws PortalException {
-
-		return getService().deleteGuestbookEntry(entry);
 	}
 
 	/**
@@ -124,25 +110,14 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @return the guestbook entry that was removed
 	 * @throws PortalException if a guestbook entry with the primary key could not be found
 	 */
-	public static GuestbookEntry deleteGuestbookEntry(long entryId)
-		throws PortalException {
-
-		return getService().deleteGuestbookEntry(entryId);
-	}
-
-	public static GuestbookEntry deleteGuestbookEntry(long entryId)
-		throws PortalException {
-
+	public static GuestbookEntry deleteGuestbookEntry(long entryId) throws PortalException {
 		return getService().deleteGuestbookEntry(entryId);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
-	public static PersistedModel deletePersistedModel(
-			PersistedModel persistedModel)
-		throws PortalException {
-
+	public static PersistedModel deletePersistedModel(PersistedModel persistedModel) throws PortalException {
 		return getService().deletePersistedModel(persistedModel);
 	}
 
@@ -242,23 +217,16 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param groupId the primary key of the group
 	 * @return the matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
-	public static GuestbookEntry fetchGuestbookEntryByUuidAndGroupId(
-		String uuid, long groupId) {
-
+	public static GuestbookEntry fetchGuestbookEntryByUuidAndGroupId(String uuid, long groupId) {
 		return getService().fetchGuestbookEntryByUuidAndGroupId(uuid, groupId);
 	}
 
-	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
-		getActionableDynamicQuery() {
-
+	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery() {
 		return getService().getActionableDynamicQuery();
 	}
 
-	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
-		getExportActionableDynamicQuery(
-			com.liferay.exportimport.kernel.lar.PortletDataContext
-				portletDataContext) {
-
+	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+			com.liferay.exportimport.kernel.lar.PortletDataContext portletDataContext) {
 		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 
@@ -273,13 +241,11 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param end the upper bound of the range of guestbook entries (not inclusive)
 	 * @return the range of guestbook entries
 	 */
-	public static List<GuestbookEntry> getGuestbookEntries(int start, int end) {
+	public static List<GuestbookEntry> getGuestbookEntriesRange(int start, int end) {
 		return getService().getGuestbookEntries(start, end);
 	}
 
-	public static List<GuestbookEntry> getGuestbookEntries(
-		long groupId, long guestbookId) {
-
+	public static List<GuestbookEntry> getGuestbookEntries(int groupId, int guestbookId) {
 		return getService().getGuestbookEntries(groupId, guestbookId);
 	}
 
@@ -287,7 +253,7 @@ public class GuestbookEntryLocalServiceUtil {
 			long groupId, long guestbookId, int start, int end)
 		throws SystemException {
 
-		return getService().getGuestbookEntries(
+		return getService().getGuestbookEntriesInRange(
 			groupId, guestbookId, start, end);
 	}
 
@@ -295,7 +261,7 @@ public class GuestbookEntryLocalServiceUtil {
 		long groupId, long guestbookId, int start, int end,
 		OrderByComparator<GuestbookEntry> obc) {
 
-		return getService().getGuestbookEntries(
+		return getService().getGuestbookEntriesOrdered(
 			groupId, guestbookId, start, end, obc);
 	}
 
@@ -306,11 +272,8 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param companyId the primary key of the company
 	 * @return the matching guestbook entries, or an empty list if no matches were found
 	 */
-	public static List<GuestbookEntry> getGuestbookEntriesByUuidAndCompanyId(
-		String uuid, long companyId) {
-
-		return getService().getGuestbookEntriesByUuidAndCompanyId(
-			uuid, companyId);
+	public static List<GuestbookEntry> getGuestbookEntriesByUuidAndCompanyId(String uuid, long companyId) {
+		return getService().getGuestbookEntriesByUuidAndCompanyId(uuid, companyId);
 	}
 
 	/**
@@ -323,10 +286,8 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the range of matching guestbook entries, or an empty list if no matches were found
 	 */
-	public static List<GuestbookEntry> getGuestbookEntriesByUuidAndCompanyId(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public static List<GuestbookEntry> getGuestbookEntriesByUuidAndCompanyId(String uuid, long companyId, int start,
+												int end, OrderByComparator<GuestbookEntry> orderByComparator) {
 		return getService().getGuestbookEntriesByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
 	}
@@ -351,15 +312,7 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @return the guestbook entry
 	 * @throws PortalException if a guestbook entry with the primary key could not be found
 	 */
-	public static GuestbookEntry getGuestbookEntry(long entryId)
-		throws PortalException {
-
-		return getService().getGuestbookEntry(entryId);
-	}
-
-	public static GuestbookEntry getGuestbookEntry(long entryId)
-		throws PortalException {
-
+	public static GuestbookEntry getGuestbookEntry(long entryId) throws PortalException {
 		return getService().getGuestbookEntry(entryId);
 	}
 
@@ -371,23 +324,16 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @return the matching guestbook entry
 	 * @throws PortalException if a matching guestbook entry could not be found
 	 */
-	public static GuestbookEntry getGuestbookEntryByUuidAndGroupId(
-			String uuid, long groupId)
-		throws PortalException {
-
+	public static GuestbookEntry getGuestbookEntryByUuidAndGroupId(String uuid, long groupId) throws PortalException {
 		return getService().getGuestbookEntryByUuidAndGroupId(uuid, groupId);
 	}
 
-	public static
-		com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
-			getIndexableActionableDynamicQuery() {
-
+	public static IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
 	/**
 	 * Returns the OSGi service identifier.
-	 *
 	 * @return the OSGi service identifier
 	 */
 	public static String getOSGiServiceIdentifier() {
@@ -397,9 +343,7 @@ public class GuestbookEntryLocalServiceUtil {
 	/**
 	 * @throws PortalException
 	 */
-	public static PersistedModel getPersistedModel(Serializable primaryKeyObj)
-		throws PortalException {
-
+	public static PersistedModel getPersistedModel(Serializable primaryKeyObj) throws PortalException {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
@@ -413,17 +357,13 @@ public class GuestbookEntryLocalServiceUtil {
 	 * @param guestbookEntry the guestbook entry
 	 * @return the guestbook entry that was updated
 	 */
-	public static GuestbookEntry updateGuestbookEntry(
-		GuestbookEntry guestbookEntry) {
-
+	public static GuestbookEntry updateGuestbookEntry(GuestbookEntry guestbookEntry) {
 		return getService().updateGuestbookEntry(guestbookEntry);
 	}
 
-	public static GuestbookEntry updateGuestbookEntry(
-			long userId, long guestbookId, long entryId, String name,
-			String email, String message, ServiceContext serviceContext)
-		throws PortalException, SystemException {
-
+	public static GuestbookEntry updateGuestbookEntry(long userId, long guestbookId, long entryId, String name, String email,
+													  String message, ServiceContext serviceContext)
+															throws PortalException, SystemException {
 		return getService().updateGuestbookEntry(
 			userId, guestbookId, entryId, name, email, message, serviceContext);
 	}
@@ -431,7 +371,5 @@ public class GuestbookEntryLocalServiceUtil {
 	public static GuestbookEntryLocalService getService() {
 		return _service;
 	}
-
-	private static volatile GuestbookEntryLocalService _service;
 
 }

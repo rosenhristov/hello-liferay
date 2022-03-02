@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -67,6 +66,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 /**
  * The persistence implementation for the guestbook entry service.
  *
@@ -74,38 +76,77 @@ import org.osgi.service.component.annotations.Reference;
  * Caching information and settings can be found in <code>portal.properties</code>
  * </p>
  *
+ * NOTE FOR DEVELOPERS:
+ *  Never modify or reference this class directly.
+ *  Always use <code>GuestbookEntryUtil</code> to access the guestbook entry persistence.
+ *  Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
+ *
  * @author Rosen Hristov
  * @generated
  */
 @Component(service = {GuestbookEntryPersistence.class, BasePersistence.class})
-public class GuestbookEntryPersistenceImpl
-	extends BasePersistenceImpl<GuestbookEntry>
-	implements GuestbookEntryPersistence {
+public class GuestbookEntryPersistenceImpl extends BasePersistenceImpl<GuestbookEntry>
+										   implements GuestbookEntryPersistence {
 
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify or reference this class directly. Always use <code>GuestbookEntryUtil</code> to access the guestbook entry persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
-	 */
-	public static final String FINDER_CLASS_NAME_ENTITY =
-		GuestbookEntryImpl.class.getName();
+	private static final Log log = LogFactoryUtil.getLog(GuestbookEntryPersistenceImpl.class);
 
-	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION =
-		FINDER_CLASS_NAME_ENTITY + ".List1";
+	private static final String FINDER_COLUMN_UUID_UUID_2 = "guestbookEntry.uuid = ?";
+	private static final String FINDER_COLUMN_UUID_UUID_3 = "(guestbookEntry.uuid IS NULL OR guestbookEntry.uuid = '')";
+	public static final String FINDER_CLASS_NAME_ENTITY = GuestbookEntryImpl.class.getName();
+	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION = FINDER_CLASS_NAME_ENTITY + ".List1";
+	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION = FINDER_CLASS_NAME_ENTITY + ".List2";
+	private static final String FINDER_COLUMN_G_G_GROUPID_2 = "guestbookEntry.groupId = ? AND ";
+	private static final String FINDER_COLUMN_G_G_GUESTBOOKID_2 = "guestbookEntry.guestbookId = ?";
 
-	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
-		FINDER_CLASS_NAME_ENTITY + ".List2";
+	private static final String SQL_SELECT_GUESTBOOKENTRY = "SELECT guestbookEntry FROM GuestbookEntry guestbookEntry";
+	private static final String SQL_SELECT_GUESTBOOKENTRY_WHERE = "SELECT guestbookEntry FROM GuestbookEntry guestbookEntry WHERE ";
+	private static final String SQL_COUNT_GUESTBOOKENTRY = "SELECT COUNT(guestbookEntry) FROM GuestbookEntry guestbookEntry";
+	private static final String SQL_COUNT_GUESTBOOKENTRY_WHERE = "SELECT COUNT(guestbookEntry) FROM GuestbookEntry guestbookEntry WHERE ";
+	private static final String ORDER_BY_ENTITY_ALIAS = "guestbookEntry.";
+	private static final String NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No GuestbookEntry exists with the primary key ";
+	private static final String NO_SUCH_ENTITY_WITH_KEY = "No GuestbookEntry exists with the key {";
 
-	private FinderPath _finderPathWithPaginationFindAll;
-	private FinderPath _finderPathWithoutPaginationFindAll;
-	private FinderPath _finderPathCountAll;
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
+	private static final String FINDER_COLUMN_UUID_C_UUID_2 = "guestbookEntry.uuid = ? AND ";
+	private static final String FINDER_COLUMN_UUID_C_UUID_3 = "(guestbookEntry.uuid IS NULL OR guestbookEntry.uuid = '') AND ";
+	private static final String FINDER_COLUMN_UUID_C_COMPANYID_2 = "guestbookEntry.companyId = ?";
+
+	private static final Set<String> badColumnNames = SetUtil.fromArray(new String[] {"uuid"});
+
+	private FinderPath finderPathWithPaginationFindByG_G;
+	private FinderPath finderPathWithoutPaginationFindByG_G;
+	private FinderPath finderPathCountByG_G;
+
+	private FinderPath finderPathWithPaginationFindAll;
+	private FinderPath finderPathWithoutPaginationFindAll;
+	private FinderPath finderPathCountAll;
+	private FinderPath finderPathWithPaginationFindByUuid;
+	private FinderPath finderPathWithoutPaginationFindByUuid;
+	private FinderPath finderPathCountByUuid;
+
+	private FinderPath finderPathFetchByUUID_G;
+	private FinderPath finderPathCountByUUID_G;
+
+	@Reference
+	protected EntityCache entityCache;
+
+	@Reference
+	protected FinderCache finderCache;
+
+	@Reference
+	private GuestbookEntryModelArgumentsResolver guestbookEntryModelArgumentsResolver;
+
+	public GuestbookEntryPersistenceImpl() {
+		Map<String, String> dbColumnNames = new HashMap<>();
+		dbColumnNames.put("uuid", "uuid_");
+		setDBColumnNames(dbColumnNames);
+		setModelClass(GuestbookEntry.class);
+		setModelImplClass(GuestbookEntryImpl.class);
+		setModelPKClass(long.class);
+		setTable(GuestbookEntryTable.INSTANCE);
+	}
 
 	/**
 	 * Returns all the guestbook entries where uuid = &#63;.
-	 *
 	 * @param uuid the uuid
 	 * @return the matching guestbook entries
 	 */
@@ -145,10 +186,7 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of matching guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public List<GuestbookEntry> findByUuid(String uuid, int start, int end, OrderByComparator<GuestbookEntry> orderByComparator) {
 		return findByUuid(uuid, start, end, orderByComparator, true);
 	}
 
@@ -167,110 +205,77 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of matching guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator,
-		boolean useFinderCache) {
-
+	public List<GuestbookEntry> findByUuid(String uuid, int start, int end,
+										   OrderByComparator<GuestbookEntry> orderByComparator, boolean useFinderCache) {
 		uuid = Objects.toString(uuid, "");
 
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
+		if (start == QueryUtil.ALL_POS && end == QueryUtil.ALL_POS && isNull(orderByComparator)) {
 			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByUuid;
+				finderPath = finderPathWithoutPaginationFindByUuid;
 				finderArgs = new Object[] {uuid};
 			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByUuid;
+		} else if (useFinderCache) {
+			finderPath = finderPathWithPaginationFindByUuid;
 			finderArgs = new Object[] {uuid, start, end, orderByComparator};
 		}
 
 		List<GuestbookEntry> list = null;
-
 		if (useFinderCache) {
-			list = (List<GuestbookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
-
-			if ((list != null) && !list.isEmpty()) {
+			list = (List<GuestbookEntry>) finderCache.getResult(finderPath, finderArgs);
+			if (nonNull(list) && !list.isEmpty()) {
 				for (GuestbookEntry guestbookEntry : list) {
 					if (!uuid.equals(guestbookEntry.getUuid())) {
 						list = null;
-
 						break;
 					}
 				}
 			}
 		}
 
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
+		if (isNull(list)) {
+			StringBundler sb;
+			if (nonNull(orderByComparator)) {
+				sb = new StringBundler(3 + (orderByComparator.getOrderByFields().length * 2));
+			} else {
 				sb = new StringBundler(3);
 			}
-
-			sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
-
+			sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
 			boolean bindUuid = false;
-
 			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_UUID_3);
-			}
-			else {
+				sb.append(FINDER_COLUMN_UUID_UUID_3);
+			} else {
 				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(FINDER_COLUMN_UUID_UUID_2);
 			}
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
+			if (nonNull(orderByComparator)) {
+				appendOrderByComparator(sb, ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			} else {
 				sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 			}
 
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				if (bindUuid) {
 					queryPos.add(uuid);
 				}
-
-				list = (List<GuestbookEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
+				list = (List<GuestbookEntry>)QueryUtil.list(query, getDialect(), start, end);
 				cacheResult(list);
-
 				if (useFinderCache) {
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return list;
 	}
 
@@ -283,24 +288,17 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByUuid_First(
-			String uuid, OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
-		GuestbookEntry guestbookEntry = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (guestbookEntry != null) {
+	public GuestbookEntry findByUuid_First(String uuid, OrderByComparator<GuestbookEntry> orderByComparator)
+							throws NoSuchGuestbookEntryException {
+		GuestbookEntry guestbookEntry = fetchByUuid_First(uuid, orderByComparator);
+		if (nonNull(guestbookEntry)) {
 			return guestbookEntry;
 		}
 
 		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("uuid=");
 		sb.append(uuid);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -314,15 +312,11 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the first matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByUuid_First(
-		String uuid, OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public GuestbookEntry fetchByUuid_First(String uuid, OrderByComparator<GuestbookEntry> orderByComparator) {
 		List<GuestbookEntry> list = findByUuid(uuid, 0, 1, orderByComparator);
-
 		if (!list.isEmpty()) {
 			return list.get(0);
 		}
-
 		return null;
 	}
 
@@ -335,24 +329,16 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByUuid_Last(
-			String uuid, OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
-		GuestbookEntry guestbookEntry = fetchByUuid_Last(
-			uuid, orderByComparator);
-
+	public GuestbookEntry findByUuid_Last(String uuid, OrderByComparator<GuestbookEntry> orderByComparator) throws NoSuchGuestbookEntryException {
+		GuestbookEntry guestbookEntry = fetchByUuid_Last(uuid, orderByComparator);
 		if (guestbookEntry != null) {
 			return guestbookEntry;
 		}
 
 		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("uuid=");
 		sb.append(uuid);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -366,22 +352,16 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the last matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByUuid_Last(
-		String uuid, OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public GuestbookEntry fetchByUuid_Last(String uuid, OrderByComparator<GuestbookEntry> orderByComparator) {
 		int count = countByUuid(uuid);
-
 		if (count == 0) {
 			return null;
 		}
 
-		List<GuestbookEntry> list = findByUuid(
-			uuid, count - 1, count, orderByComparator);
-
+		List<GuestbookEntry> list = findByUuid(uuid, count - 1, count, orderByComparator);
 		if (!list.isEmpty()) {
 			return list.get(0);
 		}
-
 		return null;
 	}
 
@@ -395,163 +375,117 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry[] findByUuid_PrevAndNext(long entryId, String uuid, OrderByComparator<GuestbookEntry> orderByComparator)
+	public GuestbookEntry[] findByUuid_PrevAndNext(long entryId, String uuid,
+												   OrderByComparator<GuestbookEntry> orderByComparator)
 			throws NoSuchGuestbookEntryException {
 		uuid = Objects.toString(uuid, "");
 		GuestbookEntry guestbookEntry = findByPrimaryKey(entryId);
 		Session session = null;
 		try {
 			session = openSession();
-			GuestbookEntry[] array = (GuestbookEntry[]) new GuestbookEntryImpl[3];
-
-			array[0] = getByUuid_PrevAndNext(
-				session, guestbookEntry, uuid, orderByComparator, true);
-
+			GuestbookEntry[] array = new GuestbookEntryImpl[3];
+			array[0] = getByUuid_PrevAndNext(session, guestbookEntry, uuid, orderByComparator, true);
 			array[1] = guestbookEntry;
-
-			array[2] = getByUuid_PrevAndNext(
-				session, guestbookEntry, uuid, orderByComparator, false);
+			array[2] = getByUuid_PrevAndNext(session, guestbookEntry, uuid, orderByComparator, false);
 
 			return array;
-		}
-		catch (Exception exception) {
+		} catch (Exception exception) {
 			throw processException(exception);
-		}
-		finally {
+		} finally {
 			closeSession(session);
 		}
 	}
 
-	protected GuestbookEntry getByUuid_PrevAndNext(
-		Session session, GuestbookEntry guestbookEntry, String uuid,
-		OrderByComparator<GuestbookEntry> orderByComparator, boolean previous) {
+	protected GuestbookEntry getByUuid_PrevAndNext(Session session, GuestbookEntry guestbookEntry, String uuid,
+												   OrderByComparator<GuestbookEntry> orderByComparator, boolean previous) {
 
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
+		StringBundler sb;
+		if (nonNull(orderByComparator)) {
 			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
-					(orderByComparator.getOrderByFields().length * 3));
-		}
-		else {
+					4 + (orderByComparator.getOrderByConditionFields().length * 3)
+									+ (orderByComparator.getOrderByFields().length * 3));
+		} else {
 			sb = new StringBundler(3);
 		}
-
-		sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
+		sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
 
 		boolean bindUuid = false;
-
 		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_UUID_3);
-		}
-		else {
+			sb.append(FINDER_COLUMN_UUID_UUID_3);
+		} else {
 			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_UUID_2);
+			sb.append(FINDER_COLUMN_UUID_UUID_2);
 		}
 
-		if (orderByComparator != null) {
-			String[] orderByConditionFields =
-				orderByComparator.getOrderByConditionFields();
-
+		if (nonNull(orderByComparator)) {
+			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
 			if (orderByConditionFields.length > 0) {
 				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByConditionFields[i]);
-
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
 						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
-					}
-					else {
+					} else {
 						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
-				}
-				else {
-					if (orderByComparator.isAscending() ^ previous) {
-						sb.append(WHERE_GREATER_THAN);
-					}
-					else {
-						sb.append(WHERE_LESSER_THAN);
-					}
+				} else if (orderByComparator.isAscending() ^ previous) {
+					sb.append(WHERE_GREATER_THAN);
+				} else {
+					sb.append(WHERE_LESSER_THAN);
 				}
 			}
 
 			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
-
 			for (int i = 0; i < orderByFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByFields[i]);
-
-				if ((i + 1) < orderByFields.length) {
+				if (orderByFields.length > (i + 1)) {
 					if (orderByComparator.isAscending() ^ previous) {
 						sb.append(ORDER_BY_ASC_HAS_NEXT);
-					}
-					else {
+					} else {
 						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
-				}
-				else {
-					if (orderByComparator.isAscending() ^ previous) {
-						sb.append(ORDER_BY_ASC);
-					}
-					else {
-						sb.append(ORDER_BY_DESC);
-					}
+				} else if (orderByComparator.isAscending() ^ previous) {
+					sb.append(ORDER_BY_ASC);
+				} else {
+					sb.append(ORDER_BY_DESC);
 				}
 			}
-		}
-		else {
+		} else {
 			sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 		}
 
 		String sql = sb.toString();
-
 		Query query = session.createQuery(sql);
-
 		query.setFirstResult(0);
 		query.setMaxResults(2);
-
 		QueryPos queryPos = QueryPos.getInstance(query);
-
 		if (bindUuid) {
 			queryPos.add(uuid);
 		}
-
-		if (orderByComparator != null) {
-			for (Object orderByConditionValue :
-					orderByComparator.getOrderByConditionValues(
-						guestbookEntry)) {
-
+		if (nonNull(orderByComparator)) {
+			for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(guestbookEntry)) {
 				queryPos.add(orderByConditionValue);
 			}
 		}
 
 		List<GuestbookEntry> list = query.list();
-
-		if (list.size() == 2) {
-			return list.get(1);
-		}
-		else {
-			return null;
-		}
+		return list.size() == 2 ? list.get(1) : null;
 	}
 
 	/**
 	 * Removes all the guestbook entries where uuid = &#63; from the database.
-	 *
 	 * @param uuid the uuid
 	 */
 	@Override
 	public void removeByUuid(String uuid) {
-		for (GuestbookEntry guestbookEntry :
-				findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
+		for (GuestbookEntry guestbookEntry : findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
 			remove(guestbookEntry);
 		}
 	}
@@ -565,67 +499,40 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public int countByUuid(String uuid) {
 		uuid = Objects.toString(uuid, "");
-
-		FinderPath finderPath = _finderPathCountByUuid;
-
+		FinderPath finderPath = finderPathCountByUuid;
 		Object[] finderArgs = new Object[] {uuid};
-
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
-
+		Long count = (Long) finderCache.getResult(finderPath, finderArgs);
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
-
-			sb.append(_SQL_COUNT_GUESTBOOKENTRY_WHERE);
-
+			sb.append(SQL_COUNT_GUESTBOOKENTRY_WHERE);
 			boolean bindUuid = false;
-
 			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_UUID_3);
-			}
-			else {
+				sb.append(FINDER_COLUMN_UUID_UUID_3);
+			} else {
 				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(FINDER_COLUMN_UUID_UUID_2);
 			}
 
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				if (bindUuid) {
 					queryPos.add(uuid);
 				}
-
 				count = (Long)query.uniqueResult();
-
 				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
 
 		return count.intValue();
 	}
-
-	private static final String _FINDER_COLUMN_UUID_UUID_2 =
-		"guestbookEntry.uuid = ?";
-
-	private static final String _FINDER_COLUMN_UUID_UUID_3 =
-		"(guestbookEntry.uuid IS NULL OR guestbookEntry.uuid = '')";
-
-	private FinderPath _finderPathFetchByUUID_G;
-	private FinderPath _finderPathCountByUUID_G;
 
 	/**
 	 * Returns the guestbook entry where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchGuestbookEntryException</code> if it could not be found.
@@ -644,7 +551,7 @@ public class GuestbookEntryPersistenceImpl
 		if (guestbookEntry == null) {
 			StringBundler sb = new StringBundler(6);
 
-			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(NO_SUCH_ENTITY_WITH_KEY);
 
 			sb.append("uuid=");
 			sb.append(uuid);
@@ -654,8 +561,8 @@ public class GuestbookEntryPersistenceImpl
 
 			sb.append("}");
 
-			if (_log.isDebugEnabled()) {
-				_log.debug(sb.toString());
+			if (log.isDebugEnabled()) {
+				log.debug(sb.toString());
 			}
 
 			throw new NoSuchGuestbookEntryException(sb.toString());
@@ -700,7 +607,7 @@ public class GuestbookEntryPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+					finderPathFetchByUUID_G, finderArgs);
 		}
 
 		if (result instanceof GuestbookEntry) {
@@ -716,7 +623,7 @@ public class GuestbookEntryPersistenceImpl
 		if (result == null) {
 			StringBundler sb = new StringBundler(4);
 
-			sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
+			sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
 
 			boolean bindUuid = false;
 
@@ -753,7 +660,7 @@ public class GuestbookEntryPersistenceImpl
 				if (list.isEmpty()) {
 					if (useFinderCache) {
 						finderCache.putResult(
-							_finderPathFetchByUUID_G, finderArgs, list);
+								finderPathFetchByUUID_G, finderArgs, list);
 					}
 				}
 				else {
@@ -807,7 +714,7 @@ public class GuestbookEntryPersistenceImpl
 	public int countByUUID_G(String uuid, long groupId) {
 		uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = _finderPathCountByUUID_G;
+		FinderPath finderPath = finderPathCountByUUID_G;
 
 		Object[] finderArgs = new Object[] {uuid, groupId};
 
@@ -816,7 +723,7 @@ public class GuestbookEntryPersistenceImpl
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
 
-			sb.append(_SQL_COUNT_GUESTBOOKENTRY_WHERE);
+			sb.append(SQL_COUNT_GUESTBOOKENTRY_WHERE);
 
 			boolean bindUuid = false;
 
@@ -976,10 +883,8 @@ public class GuestbookEntryPersistenceImpl
 		List<GuestbookEntry> list = null;
 
 		if (useFinderCache) {
-			list = (List<GuestbookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
-
-			if ((list != null) && !list.isEmpty()) {
+			list = (List<GuestbookEntry>) finderCache.getResult(finderPath, finderArgs);
+			if (nonNull(list) && !list.isEmpty()) {
 				for (GuestbookEntry guestbookEntry : list) {
 					if (!uuid.equals(guestbookEntry.getUuid()) ||
 						(companyId != guestbookEntry.getCompanyId())) {
@@ -992,74 +897,52 @@ public class GuestbookEntryPersistenceImpl
 			}
 		}
 
-		if (list == null) {
-			StringBundler sb = null;
-
+		if (isNull(list)) {
+			StringBundler sb;
 			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
+				sb = new StringBundler(4 + (orderByComparator.getOrderByFields().length * 2));
+			} else {
 				sb = new StringBundler(4);
 			}
 
-			sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
-
+			sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
 			boolean bindUuid = false;
-
 			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
-			}
-			else {
+				sb.append(FINDER_COLUMN_UUID_C_UUID_3);
+			} else {
 				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(FINDER_COLUMN_UUID_C_UUID_2);
 			}
 
-			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
+			sb.append(FINDER_COLUMN_UUID_C_COMPANYID_2);
 			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
+				appendOrderByComparator(sb, ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			} else {
 				sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 			}
 
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				if (bindUuid) {
 					queryPos.add(uuid);
 				}
 
 				queryPos.add(companyId);
-
-				list = (List<GuestbookEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
+				list = (List<GuestbookEntry>) QueryUtil.list(query, getDialect(), start, end);
 				cacheResult(list);
-
 				if (useFinderCache) {
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return list;
 	}
 
@@ -1073,28 +956,20 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByUuid_C_First(
-			String uuid, long companyId,
-			OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
-		GuestbookEntry guestbookEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (guestbookEntry != null) {
+	public GuestbookEntry findByUuid_C_First(String uuid, long companyId,
+											 OrderByComparator<GuestbookEntry> orderByComparator)
+			throws NoSuchGuestbookEntryException {
+		GuestbookEntry guestbookEntry = fetchByUuid_C_First(uuid, companyId, orderByComparator);
+		if (nonNull(guestbookEntry)) {
 			return guestbookEntry;
 		}
 
 		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("uuid=");
 		sb.append(uuid);
-
 		sb.append(", companyId=");
 		sb.append(companyId);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -1109,18 +984,10 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the first matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByUuid_C_First(
-		String uuid, long companyId,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
-		List<GuestbookEntry> list = findByUuid_C(
-			uuid, companyId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+	public GuestbookEntry fetchByUuid_C_First(String uuid, long companyId,
+											  OrderByComparator<GuestbookEntry> orderByComparator) {
+		List<GuestbookEntry> list = findByUuid_C(uuid, companyId, 0, 1, orderByComparator);
+		return !list.isEmpty() ? list.get(0) : null;
 	}
 
 	/**
@@ -1133,28 +1000,20 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByUuid_C_Last(
-			String uuid, long companyId,
-			OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
-		GuestbookEntry guestbookEntry = fetchByUuid_C_Last(
-			uuid, companyId, orderByComparator);
-
-		if (guestbookEntry != null) {
+	public GuestbookEntry findByUuid_C_Last(String uuid, long companyId,
+											OrderByComparator<GuestbookEntry> orderByComparator)
+			throws NoSuchGuestbookEntryException {
+		GuestbookEntry guestbookEntry = fetchByUuid_C_Last(uuid, companyId, orderByComparator);
+		if (nonNull(guestbookEntry)) {
 			return guestbookEntry;
 		}
 
 		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("uuid=");
 		sb.append(uuid);
-
 		sb.append(", companyId=");
 		sb.append(companyId);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -1169,24 +1028,13 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the last matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByUuid_C_Last(
-		String uuid, long companyId,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public GuestbookEntry fetchByUuid_C_Last(String uuid, long companyId, OrderByComparator<GuestbookEntry> orderByComparator) {
 		int count = countByUuid_C(uuid, companyId);
-
 		if (count == 0) {
 			return null;
 		}
-
-		List<GuestbookEntry> list = findByUuid_C(
-			uuid, companyId, count - 1, count, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		List<GuestbookEntry> list = findByUuid_C(uuid, companyId, count - 1, count, orderByComparator);
+		return !list.isEmpty() ? list.get(0) : null;
 	}
 
 	/**
@@ -1200,165 +1048,101 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry[] findByUuid_C_PrevAndNext(
-			long entryId, String uuid, long companyId,
-			OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
+	public GuestbookEntry[] findByUuid_C_PrevAndNext(long entryId, String uuid, long companyId, OrderByComparator<GuestbookEntry> orderByComparator)
+			throws NoSuchGuestbookEntryException {
 		uuid = Objects.toString(uuid, "");
-
 		GuestbookEntry guestbookEntry = findByPrimaryKey(entryId);
-
 		Session session = null;
-
 		try {
 			session = openSession();
-
-			GuestbookEntry[] array = (GuestbookEntry[]) new GuestbookEntryImpl[3];
-
-			array[0] = getByUuid_C_PrevAndNext(
-				session, guestbookEntry, uuid, companyId, orderByComparator,
-				true);
-
+			GuestbookEntry[] array = new GuestbookEntryImpl[3];
+			array[0] = getByUuid_C_PrevAndNext(session, guestbookEntry, uuid, companyId, orderByComparator, true);
 			array[1] = guestbookEntry;
-
-			array[2] = getByUuid_C_PrevAndNext(
-				session, guestbookEntry, uuid, companyId, orderByComparator,
-				false);
-
+			array[2] = getByUuid_C_PrevAndNext(session, guestbookEntry, uuid, companyId, orderByComparator, false);
 			return array;
-		}
-		catch (Exception exception) {
+		} catch (Exception exception) {
 			throw processException(exception);
-		}
-		finally {
+		} finally {
 			closeSession(session);
 		}
 	}
 
-	protected GuestbookEntry getByUuid_C_PrevAndNext(
-		Session session, GuestbookEntry guestbookEntry, String uuid,
-		long companyId, OrderByComparator<GuestbookEntry> orderByComparator,
-		boolean previous) {
-
-		StringBundler sb = null;
-
+	protected GuestbookEntry getByUuid_C_PrevAndNext(Session session, GuestbookEntry guestbookEntry, String uuid,
+													 long companyId, OrderByComparator<GuestbookEntry> orderByComparator,
+													 boolean previous) {
+		StringBundler sb;
 		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
-					(orderByComparator.getOrderByFields().length * 3));
-		}
-		else {
+			sb = new StringBundler(5 + (orderByComparator.getOrderByConditionFields().length * 3)
+										+ (orderByComparator.getOrderByFields().length * 3));
+		} else {
 			sb = new StringBundler(4);
 		}
 
-		sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
-
+		sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
 		boolean bindUuid = false;
-
 		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
-		}
-		else {
+			sb.append(FINDER_COLUMN_UUID_C_UUID_3);
+		} else {
 			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
+			sb.append(FINDER_COLUMN_UUID_C_UUID_2);
 		}
-
-		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-		if (orderByComparator != null) {
-			String[] orderByConditionFields =
-				orderByComparator.getOrderByConditionFields();
-
+		sb.append(FINDER_COLUMN_UUID_C_COMPANYID_2);
+		if (nonNull(orderByComparator)) {
+			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
 			if (orderByConditionFields.length > 0) {
 				sb.append(WHERE_AND);
 			}
-
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByConditionFields[i]);
-
-				if ((i + 1) < orderByConditionFields.length) {
+				if (orderByConditionFields.length > (i + 1)) {
 					if (orderByComparator.isAscending() ^ previous) {
 						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
-					}
-					else {
+					} else {
 						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
-				}
-				else {
-					if (orderByComparator.isAscending() ^ previous) {
+				} else if (orderByComparator.isAscending() ^ previous) {
 						sb.append(WHERE_GREATER_THAN);
-					}
-					else {
+				} else {
 						sb.append(WHERE_LESSER_THAN);
-					}
 				}
 			}
-
 			sb.append(ORDER_BY_CLAUSE);
-
 			String[] orderByFields = orderByComparator.getOrderByFields();
-
 			for (int i = 0; i < orderByFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByFields[i]);
-
-				if ((i + 1) < orderByFields.length) {
+				if (orderByFields.length > (i + 1)) {
 					if (orderByComparator.isAscending() ^ previous) {
 						sb.append(ORDER_BY_ASC_HAS_NEXT);
-					}
-					else {
+					} else {
 						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
-				}
-				else {
-					if (orderByComparator.isAscending() ^ previous) {
-						sb.append(ORDER_BY_ASC);
-					}
-					else {
-						sb.append(ORDER_BY_DESC);
-					}
+				} else if (orderByComparator.isAscending() ^ previous) {
+					sb.append(ORDER_BY_ASC);
+				} else {
+					sb.append(ORDER_BY_DESC);
 				}
 			}
-		}
-		else {
+		} else {
 			sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 		}
-
 		String sql = sb.toString();
-
 		Query query = session.createQuery(sql);
-
 		query.setFirstResult(0);
 		query.setMaxResults(2);
-
 		QueryPos queryPos = QueryPos.getInstance(query);
-
 		if (bindUuid) {
 			queryPos.add(uuid);
 		}
-
 		queryPos.add(companyId);
-
-		if (orderByComparator != null) {
-			for (Object orderByConditionValue :
-					orderByComparator.getOrderByConditionValues(
-						guestbookEntry)) {
-
+		if (nonNull(orderByComparator)) {
+			for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(guestbookEntry)) {
 				queryPos.add(orderByConditionValue);
 			}
 		}
-
 		List<GuestbookEntry> list = query.list();
-
-		if (list.size() == 2) {
-			return list.get(1);
-		}
-		else {
-			return null;
-		}
+		return list.size() == 2 ?  list.get(1) : null;
 	}
 
 	/**
@@ -1370,10 +1154,7 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public void removeByUuid_C(String uuid, long companyId) {
 		for (GuestbookEntry guestbookEntry :
-				findByUuid_C(
-					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
+				findByUuid_C(uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
 			remove(guestbookEntry);
 		}
 	}
@@ -1388,75 +1169,40 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
 		uuid = Objects.toString(uuid, "");
-
 		FinderPath finderPath = _finderPathCountByUuid_C;
-
 		Object[] finderArgs = new Object[] {uuid, companyId};
-
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
-
-		if (count == null) {
+		if (isNull(count)) {
 			StringBundler sb = new StringBundler(3);
-
-			sb.append(_SQL_COUNT_GUESTBOOKENTRY_WHERE);
-
+			sb.append(SQL_COUNT_GUESTBOOKENTRY_WHERE);
 			boolean bindUuid = false;
-
 			if (uuid.isEmpty()) {
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
-			}
-			else {
+				sb.append(FINDER_COLUMN_UUID_C_UUID_3);
+			} else {
 				bindUuid = true;
-
-				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(FINDER_COLUMN_UUID_C_UUID_2);
 			}
-
-			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
+			sb.append(FINDER_COLUMN_UUID_C_COMPANYID_2);
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				if (bindUuid) {
 					queryPos.add(uuid);
 				}
-
 				queryPos.add(companyId);
-
-				count = (Long)query.uniqueResult();
-
+				count = (Long) query.uniqueResult();
 				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return count.intValue();
 	}
-
-	private static final String _FINDER_COLUMN_UUID_C_UUID_2 =
-		"guestbookEntry.uuid = ? AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_UUID_3 =
-		"(guestbookEntry.uuid IS NULL OR guestbookEntry.uuid = '') AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_COMPANYID_2 =
-		"guestbookEntry.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_G;
-	private FinderPath _finderPathWithoutPaginationFindByG_G;
-	private FinderPath _finderPathCountByG_G;
 
 	/**
 	 * Returns all the guestbook entries where groupId = &#63; and guestbookId = &#63;.
@@ -1467,8 +1213,7 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public List<GuestbookEntry> findByG_G(long groupId, long guestbookId) {
-		return findByG_G(
-			groupId, guestbookId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+		return findByG_G(groupId, guestbookId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	/**
@@ -1485,9 +1230,7 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the range of matching guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findByG_G(
-		long groupId, long guestbookId, int start, int end) {
-
+	public List<GuestbookEntry> findByG_G(long groupId, long guestbookId, int start, int end) {
 		return findByG_G(groupId, guestbookId, start, end, null);
 	}
 
@@ -1506,12 +1249,9 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of matching guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findByG_G(
-		long groupId, long guestbookId, int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
-		return findByG_G(
-			groupId, guestbookId, start, end, orderByComparator, true);
+	public List<GuestbookEntry> findByG_G(long groupId, long guestbookId, int start, int end,
+										  OrderByComparator<GuestbookEntry> orderByComparator) {
+		return findByG_G(groupId, guestbookId, start, end, orderByComparator, true);
 	}
 
 	/**
@@ -1530,105 +1270,64 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of matching guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findByG_G(
-		long groupId, long guestbookId, int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator,
-		boolean useFinderCache) {
-
+	public List<GuestbookEntry> findByG_G(long groupId, long guestbookId, int start, int end,
+										  OrderByComparator<GuestbookEntry> orderByComparator, boolean useFinderCache) {
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByG_G;
-				finderArgs = new Object[] {groupId, guestbookId};
-			}
+		if (start == QueryUtil.ALL_POS && end == QueryUtil.ALL_POS
+				&& isNull(orderByComparator) && useFinderCache) {
+			finderPath = finderPathWithoutPaginationFindByG_G;
+			finderArgs = new Object[] {groupId, guestbookId};
+		} else if (useFinderCache) {
+			finderPath = finderPathWithPaginationFindByG_G;
+			finderArgs = new Object[] {groupId, guestbookId, start, end, orderByComparator};
 		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByG_G;
-			finderArgs = new Object[] {
-				groupId, guestbookId, start, end, orderByComparator
-			};
-		}
-
 		List<GuestbookEntry> list = null;
-
 		if (useFinderCache) {
-			list = (List<GuestbookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
-
-			if ((list != null) && !list.isEmpty()) {
+			list = (List<GuestbookEntry>) finderCache.getResult(finderPath, finderArgs);
+			if (nonNull(list) && !list.isEmpty()) {
 				for (GuestbookEntry guestbookEntry : list) {
-					if ((groupId != guestbookEntry.getGroupId()) ||
-						(guestbookId != guestbookEntry.getGuestbookId())) {
-
+					if (groupId != guestbookEntry.getGroupId() ||  guestbookId != guestbookEntry.getGuestbookId()) {
 						list = null;
-
 						break;
 					}
 				}
 			}
 		}
-
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					4 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
+		if (isNull(list)) {
+			StringBundler sb;
+			if (nonNull(orderByComparator)) {
+				sb = new StringBundler(4 + (orderByComparator.getOrderByFields().length * 2));
+			} else {
 				sb = new StringBundler(4);
 			}
-
-			sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_G_G_GROUPID_2);
-
-			sb.append(_FINDER_COLUMN_G_G_GUESTBOOKID_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
+			sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
+			sb.append(FINDER_COLUMN_G_G_GROUPID_2);
+			sb.append(FINDER_COLUMN_G_G_GUESTBOOKID_2);
+			if (nonNull(orderByComparator)) {
+				appendOrderByComparator(sb, ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			} else {
 				sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 			}
-
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				queryPos.add(groupId);
-
 				queryPos.add(guestbookId);
-
-				list = (List<GuestbookEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
+				list = (List<GuestbookEntry>) QueryUtil.list(query, getDialect(), start, end);
 				cacheResult(list);
-
 				if (useFinderCache) {
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return list;
 	}
 
@@ -1642,10 +1341,8 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByG_G_First(
-			long groupId, long guestbookId,
-			OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
+	public GuestbookEntry findByG_G_First(long groupId, long guestbookId, OrderByComparator<GuestbookEntry> orderByComparator)
+			throws NoSuchGuestbookEntryException {
 
 		GuestbookEntry guestbookEntry = fetchByG_G_First(
 			groupId, guestbookId, orderByComparator);
@@ -1656,14 +1353,11 @@ public class GuestbookEntryPersistenceImpl
 
 		StringBundler sb = new StringBundler(6);
 
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("groupId=");
 		sb.append(groupId);
-
 		sb.append(", guestbookId=");
 		sb.append(guestbookId);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -1678,17 +1372,13 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the first matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByG_G_First(
-		long groupId, long guestbookId,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
+	public GuestbookEntry fetchByG_G_First(long groupId, long guestbookId,
+										   OrderByComparator<GuestbookEntry> orderByComparator) {
 
-		List<GuestbookEntry> list = findByG_G(
-			groupId, guestbookId, 0, 1, orderByComparator);
-
+		List<GuestbookEntry> list = findByG_G(groupId, guestbookId, 0, 1, orderByComparator);
 		if (!list.isEmpty()) {
 			return list.get(0);
 		}
-
 		return null;
 	}
 
@@ -1702,28 +1392,19 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry findByG_G_Last(
-			long groupId, long guestbookId,
-			OrderByComparator<GuestbookEntry> orderByComparator)
-		throws NoSuchGuestbookEntryException {
-
-		GuestbookEntry guestbookEntry = fetchByG_G_Last(
-			groupId, guestbookId, orderByComparator);
-
-		if (guestbookEntry != null) {
+	public GuestbookEntry findByG_G_Last(long groupId, long guestbookId,
+										 OrderByComparator<GuestbookEntry> orderByComparator)
+			throws NoSuchGuestbookEntryException {
+		GuestbookEntry guestbookEntry = fetchByG_G_Last(groupId, guestbookId, orderByComparator);
+		if (nonNull(guestbookEntry)) {
 			return guestbookEntry;
 		}
-
 		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
+		sb.append(NO_SUCH_ENTITY_WITH_KEY);
 		sb.append("groupId=");
 		sb.append(groupId);
-
 		sb.append(", guestbookId=");
 		sb.append(guestbookId);
-
 		sb.append("}");
 
 		throw new NoSuchGuestbookEntryException(sb.toString());
@@ -1738,23 +1419,16 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the last matching guestbook entry, or <code>null</code> if a matching guestbook entry could not be found
 	 */
 	@Override
-	public GuestbookEntry fetchByG_G_Last(
-		long groupId, long guestbookId,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public GuestbookEntry fetchByG_G_Last(long groupId, long guestbookId,
+										  OrderByComparator<GuestbookEntry> orderByComparator) {
 		int count = countByG_G(groupId, guestbookId);
-
 		if (count == 0) {
 			return null;
 		}
-
-		List<GuestbookEntry> list = findByG_G(
-			groupId, guestbookId, count - 1, count, orderByComparator);
-
+		List<GuestbookEntry> list = findByG_G(groupId, guestbookId, count - 1, count, orderByComparator);
 		if (!list.isEmpty()) {
 			return list.get(0);
 		}
-
 		return null;
 	}
 
@@ -1775,17 +1449,10 @@ public class GuestbookEntryPersistenceImpl
 		Session session = null;
 		try {
 			session = openSession();
-			GuestbookEntry[] array = (GuestbookEntry[]) new GuestbookEntryImpl[3];
-			array[0] = getByG_G_PrevAndNext(
-				session, guestbookEntry, groupId, guestbookId,
-				orderByComparator, true);
-
+			GuestbookEntry[] array = new GuestbookEntryImpl[3];
+			array[0] = getByG_G_PrevAndNext(session, guestbookEntry, groupId, guestbookId, orderByComparator, true);
 			array[1] = guestbookEntry;
-
-			array[2] = getByG_G_PrevAndNext(
-				session, guestbookEntry, groupId, guestbookId,
-				orderByComparator, false);
-
+			array[2] = getByG_G_PrevAndNext(session, guestbookEntry, groupId, guestbookId, orderByComparator, false);
 			return array;
 		} catch (Exception exception) {
 			throw processException(exception);
@@ -1794,39 +1461,31 @@ public class GuestbookEntryPersistenceImpl
 		}
 	}
 
-	protected GuestbookEntry getByG_G_PrevAndNext(
-		Session session, GuestbookEntry guestbookEntry, long groupId,
-		long guestbookId, OrderByComparator<GuestbookEntry> orderByComparator,
-		boolean previous) {
-
+	protected GuestbookEntry getByG_G_PrevAndNext(Session session, GuestbookEntry guestbookEntry, long groupId, long guestbookId,
+												  OrderByComparator<GuestbookEntry> orderByComparator, boolean previous) {
 		StringBundler sb;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
-					(orderByComparator.getOrderByFields().length * 3));
-		}
-		else {
+		if (nonNull(orderByComparator)) {
+			sb = new StringBundler(5 + (orderByComparator.getOrderByConditionFields().length * 3)
+										+ (orderByComparator.getOrderByFields().length * 3));
+		} else {
 			sb = new StringBundler(4);
 		}
-
-		sb.append(_SQL_SELECT_GUESTBOOKENTRY_WHERE);
-		sb.append(_FINDER_COLUMN_G_G_GROUPID_2);
-		sb.append(_FINDER_COLUMN_G_G_GUESTBOOKID_2);
+		sb.append(SQL_SELECT_GUESTBOOKENTRY_WHERE);
+		sb.append(FINDER_COLUMN_G_G_GROUPID_2);
+		sb.append(FINDER_COLUMN_G_G_GUESTBOOKID_2);
 		if (orderByComparator != null) {
 			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
 			if (orderByConditionFields.length > 0) {
 				sb.append(WHERE_AND);
 			}
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByConditionFields[i]);
 
-				if ((i + 1) < orderByConditionFields.length) {
+				if (orderByConditionFields.length > (i + 1)) {
 					if (orderByComparator.isAscending() ^ previous) {
 						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
-					}
-					else {
+					} else {
 						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				} else if (orderByComparator.isAscending() ^ previous) {
@@ -1836,10 +1495,9 @@ public class GuestbookEntryPersistenceImpl
 				}
 			}
 			sb.append(ORDER_BY_CLAUSE);
-
 			String[] orderByFields = orderByComparator.getOrderByFields();
 			for (int i = 0; i < orderByFields.length; i++) {
-				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(ORDER_BY_ENTITY_ALIAS);
 				sb.append(orderByFields[i]);
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
@@ -1858,35 +1516,22 @@ public class GuestbookEntryPersistenceImpl
 		else {
 			sb.append(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 		}
-
 		String sql = sb.toString();
-
 		Query query = session.createQuery(sql);
-
 		query.setFirstResult(0);
 		query.setMaxResults(2);
-
 		QueryPos queryPos = QueryPos.getInstance(query);
-
 		queryPos.add(groupId);
-
 		queryPos.add(guestbookId);
-
 		if (orderByComparator != null) {
-			for (Object orderByConditionValue :
-					orderByComparator.getOrderByConditionValues(
-						guestbookEntry)) {
-
+			for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(guestbookEntry)) {
 				queryPos.add(orderByConditionValue);
 			}
 		}
-
 		List<GuestbookEntry> list = query.list();
-
 		if (list.size() == 2) {
 			return list.get(1);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -1900,10 +1545,7 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public void removeByG_G(long groupId, long guestbookId) {
 		for (GuestbookEntry guestbookEntry :
-				findByG_G(
-					groupId, guestbookId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
+				findByG_G(groupId, guestbookId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
 			remove(guestbookEntry);
 		}
 	}
@@ -1917,70 +1559,31 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_G(long groupId, long guestbookId) {
-		FinderPath finderPath = _finderPathCountByG_G;
-
+		FinderPath finderPath = finderPathCountByG_G;
 		Object[] finderArgs = new Object[] {groupId, guestbookId};
-
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
-
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
-
-			sb.append(_SQL_COUNT_GUESTBOOKENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_G_G_GROUPID_2);
-
-			sb.append(_FINDER_COLUMN_G_G_GUESTBOOKID_2);
-
+			sb.append(SQL_COUNT_GUESTBOOKENTRY_WHERE);
+			sb.append(FINDER_COLUMN_G_G_GROUPID_2);
+			sb.append(FINDER_COLUMN_G_G_GUESTBOOKID_2);
 			String sql = sb.toString();
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
 				QueryPos queryPos = QueryPos.getInstance(query);
-
 				queryPos.add(groupId);
-
 				queryPos.add(guestbookId);
-
 				count = (Long)query.uniqueResult();
-
 				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return count.intValue();
-	}
-
-	private static final String _FINDER_COLUMN_G_G_GROUPID_2 =
-		"guestbookEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_G_GUESTBOOKID_2 =
-		"guestbookEntry.guestbookId = ?";
-
-	public GuestbookEntryPersistenceImpl() {
-		Map<String, String> dbColumnNames = new HashMap<String, String>();
-
-		dbColumnNames.put("uuid", "uuid_");
-
-		setDBColumnNames(dbColumnNames);
-
-		setModelClass(GuestbookEntry.class);
-
-		setModelImplClass((Class<? extends GuestbookEntry>) GuestbookEntryImpl.class);
-		setModelPKClass(long.class);
-
-		setTable(GuestbookEntryTable.INSTANCE);
 	}
 
 	/**
@@ -1990,19 +1593,12 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(GuestbookEntry guestbookEntry) {
-		entityCache.putResult(
-			GuestbookEntryImpl.class, guestbookEntry.getPrimaryKey(),
-			guestbookEntry);
-
-		finderCache.putResult(
-			_finderPathFetchByUUID_G,
-			new Object[] {
-				guestbookEntry.getUuid(), guestbookEntry.getGroupId()
-			},
-			guestbookEntry);
+		entityCache.putResult(GuestbookEntryImpl.class, guestbookEntry.getPrimaryKey(), guestbookEntry);
+		finderCache.putResult(finderPathFetchByUUID_G,
+							   new Object[] {guestbookEntry.getUuid(), guestbookEntry.getGroupId()},
+				     		   guestbookEntry);
 	}
-
-	private int _valueObjectFinderCacheListThreshold;
+	private int valueObjectFinderCacheListThreshold;
 
 	/**
 	 * Caches the guestbook entries in the entity cache if it is enabled.
@@ -2011,19 +1607,13 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(List<GuestbookEntry> guestbookEntries) {
-		if ((_valueObjectFinderCacheListThreshold == 0) ||
-			((_valueObjectFinderCacheListThreshold > 0) &&
-			 (guestbookEntries.size() >
-				 _valueObjectFinderCacheListThreshold))) {
-
+		if (valueObjectFinderCacheListThreshold == 0
+				|| (valueObjectFinderCacheListThreshold > 0
+						&& guestbookEntries.size() > valueObjectFinderCacheListThreshold)) {
 			return;
 		}
-
 		for (GuestbookEntry guestbookEntry : guestbookEntries) {
-			if (entityCache.getResult(
-					GuestbookEntryImpl.class, guestbookEntry.getPrimaryKey()) ==
-						null) {
-
+			if (entityCache.getResult(GuestbookEntryImpl.class, guestbookEntry.getPrimaryKey()) == null) {
 				cacheResult(guestbookEntry);
 			}
 		}
@@ -2039,7 +1629,6 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public void clearCache() {
 		entityCache.clearCache(GuestbookEntryImpl.class);
-
 		finderCache.clearCache(GuestbookEntryImpl.class);
 	}
 
@@ -2065,23 +1654,15 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	public void clearCache(Set<Serializable> primaryKeys) {
 		finderCache.clearCache(GuestbookEntryImpl.class);
-
 		for (Serializable primaryKey : primaryKeys) {
 			entityCache.removeResult(GuestbookEntryImpl.class, primaryKey);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(
-		GuestbookEntryModelImpl guestbookEntryModelImpl) {
-
-		Object[] args = new Object[] {
-			guestbookEntryModelImpl.getUuid(),
-			guestbookEntryModelImpl.getGroupId()
-		};
-
-		finderCache.putResult(_finderPathCountByUUID_G, args, Long.valueOf(1));
-		finderCache.putResult(
-			_finderPathFetchByUUID_G, args, guestbookEntryModelImpl);
+	protected void cacheUniqueFindersCache(GuestbookEntryModelImpl guestbookEntryModelImpl) {
+		Object[] args = new Object[] {guestbookEntryModelImpl.getUuid(), guestbookEntryModelImpl.getGroupId()};
+		finderCache.putResult(finderPathCountByUUID_G, args, Long.valueOf(1));
+		finderCache.putResult(finderPathFetchByUUID_G, args, guestbookEntryModelImpl);
 	}
 
 	/**
@@ -2092,17 +1673,12 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public GuestbookEntry create(long entryId) {
-		GuestbookEntry guestbookEntry = (GuestbookEntry) new GuestbookEntryImpl();
-
+		GuestbookEntry guestbookEntry = new GuestbookEntryImpl();
 		guestbookEntry.setNew(true);
 		guestbookEntry.setPrimaryKey(entryId);
-
 		String uuid = PortalUUIDUtil.generate();
-
 		guestbookEntry.setUuid(uuid);
-
 		guestbookEntry.setCompanyId(CompanyThreadLocal.getCompanyId());
-
 		return guestbookEntry;
 	}
 
@@ -2114,9 +1690,7 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry remove(long entryId)
-		throws NoSuchGuestbookEntryException {
-
+	public GuestbookEntry remove(long entryId) throws NoSuchGuestbookEntryException {
 		return remove((Serializable)entryId);
 	}
 
@@ -2128,35 +1702,23 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry remove(Serializable primaryKey)
-		throws NoSuchGuestbookEntryException {
-
+	public GuestbookEntry remove(Serializable primaryKey) throws NoSuchGuestbookEntryException {
 		Session session = null;
-
 		try {
 			session = openSession();
-
-			GuestbookEntry guestbookEntry = (GuestbookEntry)session.get(
-				GuestbookEntryImpl.class, primaryKey);
-
-			if (guestbookEntry == null) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
+			GuestbookEntry guestbookEntry = (GuestbookEntry)session.get(GuestbookEntryImpl.class, primaryKey);
+			if (isNull(guestbookEntry)) {
+				if (log.isDebugEnabled()) {
+					log.debug(NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 				}
-
-				throw new NoSuchGuestbookEntryException(
-					_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
+				throw new NoSuchGuestbookEntryException(NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
-
 			return remove(guestbookEntry);
-		}
-		catch (NoSuchGuestbookEntryException noSuchEntityException) {
+		} catch (NoSuchGuestbookEntryException noSuchEntityException) {
 			throw noSuchEntityException;
-		}
-		catch (Exception exception) {
+		} catch (Exception exception) {
 			throw processException(exception);
-		}
-		finally {
+		} finally {
 			closeSession(session);
 		}
 	}
@@ -2164,119 +1726,79 @@ public class GuestbookEntryPersistenceImpl
 	@Override
 	protected GuestbookEntry removeImpl(GuestbookEntry guestbookEntry) {
 		Session session = null;
-
 		try {
 			session = openSession();
-
 			if (!session.contains(guestbookEntry)) {
-				guestbookEntry = (GuestbookEntry)session.get(
-					GuestbookEntryImpl.class,
-					guestbookEntry.getPrimaryKeyObj());
+				guestbookEntry = (GuestbookEntry) session.get(GuestbookEntryImpl.class, guestbookEntry.getPrimaryKeyObj());
 			}
-
-			if (guestbookEntry != null) {
+			if (nonNull(guestbookEntry)) {
 				session.delete(guestbookEntry);
 			}
-		}
-		catch (Exception exception) {
+		} catch (Exception exception) {
 			throw processException(exception);
-		}
-		finally {
+		} finally {
 			closeSession(session);
 		}
-
-		if (guestbookEntry != null) {
+		if (nonNull(guestbookEntry)) {
 			clearCache(guestbookEntry);
 		}
-
 		return guestbookEntry;
 	}
 
 	@Override
 	public GuestbookEntry updateImpl(GuestbookEntry guestbookEntry) {
 		boolean isNew = guestbookEntry.isNew();
-
 		if (!(guestbookEntry instanceof GuestbookEntryModelImpl)) {
-			InvocationHandler invocationHandler = null;
-
+			InvocationHandler invocationHandler;
 			if (ProxyUtil.isProxyClass(guestbookEntry.getClass())) {
-				invocationHandler = ProxyUtil.getInvocationHandler(
-					guestbookEntry);
-
+				invocationHandler = ProxyUtil.getInvocationHandler(guestbookEntry);
 				throw new IllegalArgumentException(
-					"Implement ModelWrapper in guestbookEntry proxy " +
-						invocationHandler.getClass());
+						"Implement ModelWrapper in guestbookEntry proxy " + invocationHandler.getClass());
 			}
-
-			throw new IllegalArgumentException(
-				"Implement ModelWrapper in custom GuestbookEntry implementation " +
+			throw new IllegalArgumentException("Implement ModelWrapper in custom GuestbookEntry implementation " +
 					guestbookEntry.getClass());
 		}
-
-		GuestbookEntryModelImpl guestbookEntryModelImpl =
-			(GuestbookEntryModelImpl)guestbookEntry;
-
+		GuestbookEntryModelImpl guestbookEntryModelImpl = (GuestbookEntryModelImpl) guestbookEntry;
 		if (Validator.isNull(guestbookEntry.getUuid())) {
 			String uuid = PortalUUIDUtil.generate();
-
 			guestbookEntry.setUuid(uuid);
 		}
-
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
+		ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 		Date date = new Date();
-
-		if (isNew && (guestbookEntry.getCreateDate() == null)) {
+		if (isNew && isNull(guestbookEntry.getCreateDate())) {
 			if (serviceContext == null) {
 				guestbookEntry.setCreateDate(date);
-			}
-			else {
-				guestbookEntry.setCreateDate(
-					serviceContext.getCreateDate(date));
+			} else {
+				guestbookEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
-
 		if (!guestbookEntryModelImpl.hasSetModifiedDate()) {
-			if (serviceContext == null) {
+			if (isNull(serviceContext)) {
 				guestbookEntry.setModifiedDate(date);
-			}
-			else {
-				guestbookEntry.setModifiedDate(
-					serviceContext.getModifiedDate(date));
+			} else {
+				guestbookEntry.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
 		Session session = null;
-
 		try {
 			session = openSession();
-
 			if (isNew) {
 				session.save(guestbookEntry);
-			}
-			else {
+			} else {
 				guestbookEntry = (GuestbookEntry)session.merge(guestbookEntry);
 			}
-		}
-		catch (Exception exception) {
+		} catch (Exception exception) {
 			throw processException(exception);
-		}
-		finally {
+		} finally {
 			closeSession(session);
 		}
-
-		entityCache.putResult(
-			GuestbookEntryImpl.class, guestbookEntryModelImpl, false, true);
-
+		entityCache.putResult(GuestbookEntryImpl.class, guestbookEntryModelImpl, false, true);
 		cacheUniqueFindersCache(guestbookEntryModelImpl);
-
 		if (isNew) {
 			guestbookEntry.setNew(false);
 		}
-
 		guestbookEntry.resetOriginalValues();
-
 		return guestbookEntry;
 	}
 
@@ -2288,20 +1810,14 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry findByPrimaryKey(Serializable primaryKey)
-		throws NoSuchGuestbookEntryException {
-
+	public GuestbookEntry findByPrimaryKey(Serializable primaryKey) throws NoSuchGuestbookEntryException {
 		GuestbookEntry guestbookEntry = fetchByPrimaryKey(primaryKey);
-
-		if (guestbookEntry == null) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
+		if (isNull(guestbookEntry)) {
+			if (log.isDebugEnabled()) {
+				log.debug(NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
-
-			throw new NoSuchGuestbookEntryException(
-				_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
+			throw new NoSuchGuestbookEntryException(NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 		}
-
 		return guestbookEntry;
 	}
 
@@ -2313,9 +1829,7 @@ public class GuestbookEntryPersistenceImpl
 	 * @throws NoSuchGuestbookEntryException if a guestbook entry with the primary key could not be found
 	 */
 	@Override
-	public GuestbookEntry findByPrimaryKey(long entryId)
-		throws NoSuchGuestbookEntryException {
-
+	public GuestbookEntry findByPrimaryKey(long entryId) throws NoSuchGuestbookEntryException {
 		return findByPrimaryKey((Serializable)entryId);
 	}
 
@@ -2369,10 +1883,7 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findAll(
-		int start, int end,
-		OrderByComparator<GuestbookEntry> orderByComparator) {
-
+	public List<GuestbookEntry> findAll(int start, int end, OrderByComparator<GuestbookEntry> orderByComparator) {
 		return findAll(start, end, orderByComparator, true);
 	}
 
@@ -2390,78 +1901,50 @@ public class GuestbookEntryPersistenceImpl
 	 * @return the ordered range of guestbook entries
 	 */
 	@Override
-	public List<GuestbookEntry> findAll(
-		int start, int end, OrderByComparator<GuestbookEntry> orderByComparator,
-		boolean useFinderCache) {
-
+	public List<GuestbookEntry> findAll(int start, int end, OrderByComparator<GuestbookEntry> orderByComparator,
+										boolean useFinderCache) {
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
+		if (start == QueryUtil.ALL_POS && end == QueryUtil.ALL_POS && isNull(orderByComparator)) {
 			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindAll;
+				finderPath = finderPathWithoutPaginationFindAll;
 				finderArgs = FINDER_ARGS_EMPTY;
 			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindAll;
+		} else if (useFinderCache) {
+			finderPath = finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
-
 		List<GuestbookEntry> list = null;
-
 		if (useFinderCache) {
-			list = (List<GuestbookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+			list = (List<GuestbookEntry>) finderCache.getResult(finderPath, finderArgs);
 		}
-
-		if (list == null) {
-			StringBundler sb = null;
-			String sql = null;
-
+		if (isNull(list)) {
+			StringBundler sb;
+			String sql;
 			if (orderByComparator != null) {
-				sb = new StringBundler(
-					2 + (orderByComparator.getOrderByFields().length * 2));
-
-				sb.append(_SQL_SELECT_GUESTBOOKENTRY);
-
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-
+				sb = new StringBundler(2 + (orderByComparator.getOrderByFields().length * 2));
+				sb.append(SQL_SELECT_GUESTBOOKENTRY);
+				appendOrderByComparator(sb, ORDER_BY_ENTITY_ALIAS, orderByComparator);
 				sql = sb.toString();
-			}
-			else {
-				sql = _SQL_SELECT_GUESTBOOKENTRY;
-
+			} else {
+				sql = SQL_SELECT_GUESTBOOKENTRY;
 				sql = sql.concat(GuestbookEntryModelImpl.ORDER_BY_JPQL);
 			}
-
 			Session session = null;
-
 			try {
 				session = openSession();
-
 				Query query = session.createQuery(sql);
-
-				list = (List<GuestbookEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
+				list = (List<GuestbookEntry>) QueryUtil.list(query, getDialect(), start, end);
 				cacheResult(list);
-
 				if (useFinderCache) {
 					finderCache.putResult(finderPath, finderArgs, list);
 				}
-			}
-			catch (Exception exception) {
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return list;
 	}
 
@@ -2483,36 +1966,26 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-		if (count == null) {
+		Long count = (Long) finderCache.getResult(finderPathCountAll, FINDER_ARGS_EMPTY);
+		if (isNull(count)) {
 			Session session = null;
-
 			try {
 				session = openSession();
-
-				Query query = session.createQuery(_SQL_COUNT_GUESTBOOKENTRY);
-
+				Query query = session.createQuery(SQL_COUNT_GUESTBOOKENTRY);
 				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
-			}
-			catch (Exception exception) {
+				finderCache.putResult(finderPathCountAll, FINDER_ARGS_EMPTY, count);
+			} catch (Exception exception) {
 				throw processException(exception);
-			}
-			finally {
+			} finally {
 				closeSession(session);
 			}
 		}
-
 		return count.intValue();
 	}
 
 	@Override
 	public Set<String> getBadColumnNames() {
-		return _badColumnNames;
+		return badColumnNames;
 	}
 
 	@Override
@@ -2527,7 +2000,7 @@ public class GuestbookEntryPersistenceImpl
 
 	@Override
 	protected String getSelectSQL() {
-		return _SQL_SELECT_GUESTBOOKENTRY;
+		return SQL_SELECT_GUESTBOOKENTRY;
 	}
 
 	@Override
@@ -2540,45 +2013,43 @@ public class GuestbookEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_valueObjectFinderCacheListThreshold = GetterUtil.getInteger(
-			PropsUtil.get(PropsKeys.VALUE_OBJECT_FINDER_CACHE_LIST_THRESHOLD));
+		valueObjectFinderCacheListThreshold = GetterUtil.getInteger(
+				PropsUtil.get(PropsKeys.VALUE_OBJECT_FINDER_CACHE_LIST_THRESHOLD));
 
-		_finderPathWithPaginationFindAll = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
-			new String[0], true);
+		finderPathWithPaginationFindAll = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+				new String[0], true);
 
-		_finderPathWithoutPaginationFindAll = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
-			new String[0], true);
+		finderPathWithoutPaginationFindAll = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+				new String[0], true);
 
-		_finderPathCountAll = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
-			new String[0], new String[0], false);
+		finderPathCountAll = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+				new String[0], new String[0], false);
 
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
+		finderPathWithPaginationFindByUuid = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {String.class.getName(), Integer.class.getName(),
+						      Integer.class.getName(), OrderByComparator.class.getName()},
+				new String[] {"uuid_"}, true);
 
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
+		finderPathWithoutPaginationFindByUuid = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				true);
 
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
+		finderPathCountByUuid = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				false);
 
-		_finderPathFetchByUUID_G = new FinderPath(
+		finderPathFetchByUUID_G = new FinderPath(
 			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
 			new String[] {String.class.getName(), Long.class.getName()},
 			new String[] {"uuid_", "groupId"}, true);
 
-		_finderPathCountByUUID_G = new FinderPath(
+		finderPathCountByUUID_G = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUUID_G",
 			new String[] {String.class.getName(), Long.class.getName()},
 			new String[] {"uuid_", "groupId"}, false);
@@ -2602,116 +2073,59 @@ public class GuestbookEntryPersistenceImpl
 			new String[] {String.class.getName(), Long.class.getName()},
 			new String[] {"uuid_", "companyId"}, false);
 
-		_finderPathWithPaginationFindByG_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_G",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "guestbookId"}, true);
+		finderPathWithPaginationFindByG_G = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_G",
+				new String[] {Long.class.getName(), Long.class.getName(), Integer.class.getName(),
+						      Integer.class.getName(), OrderByComparator.class.getName()},
+				new String[] {"groupId", "guestbookId"}, true);
 
-		_finderPathWithoutPaginationFindByG_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_G",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "guestbookId"}, true);
+		finderPathWithoutPaginationFindByG_G = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_G",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "guestbookId"}, true);
 
-		_finderPathCountByG_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_G",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "guestbookId"}, false);
-
+		finderPathCountByG_G = new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_G",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "guestbookId"}, false);
 		_setGuestbookEntryUtilPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
 		_setGuestbookEntryUtilPersistence(null);
-
 		entityCache.removeCache(GuestbookEntryImpl.class.getName());
 	}
 
-	private void _setGuestbookEntryUtilPersistence(
-		GuestbookEntryPersistence guestbookEntryPersistence) {
-
+	private void _setGuestbookEntryUtilPersistence(GuestbookEntryPersistence guestbookEntryPersistence) {
 		try {
-			Field field = GuestbookEntryUtil.class.getDeclaredField(
-				"_persistence");
-
+			Field field = GuestbookEntryUtil.class.getDeclaredField("_persistence");
 			field.setAccessible(true);
-
 			field.set(null, guestbookEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
+		} catch (ReflectiveOperationException reflectiveOperationException) {
 			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 
 	@Override
-	@Reference(
-		target = GBPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
-		unbind = "-"
-	)
+	@Reference(target = GBPersistenceConstants.SERVICE_CONFIGURATION_FILTER, unbind = "-")
 	public void setConfiguration(Configuration configuration) {
 	}
 
 	@Override
-	@Reference(
-		target = GBPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
-		unbind = "-"
-	)
+	@Reference(target = GBPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER, unbind = "-")
 	public void setDataSource(DataSource dataSource) {
 		super.setDataSource(dataSource);
 	}
 
 	@Override
-	@Reference(
-		target = GBPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
-		unbind = "-"
-	)
+	@Reference(target = GBPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER, unbind = "-")
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		super.setSessionFactory(sessionFactory);
 	}
-
-	@Reference
-	protected EntityCache entityCache;
-
-	@Reference
-	protected FinderCache finderCache;
-
-	private static final String _SQL_SELECT_GUESTBOOKENTRY =
-		"SELECT guestbookEntry FROM GuestbookEntry guestbookEntry";
-
-	private static final String _SQL_SELECT_GUESTBOOKENTRY_WHERE =
-		"SELECT guestbookEntry FROM GuestbookEntry guestbookEntry WHERE ";
-
-	private static final String _SQL_COUNT_GUESTBOOKENTRY =
-		"SELECT COUNT(guestbookEntry) FROM GuestbookEntry guestbookEntry";
-
-	private static final String _SQL_COUNT_GUESTBOOKENTRY_WHERE =
-		"SELECT COUNT(guestbookEntry) FROM GuestbookEntry guestbookEntry WHERE ";
-
-	private static final String _ORDER_BY_ENTITY_ALIAS = "guestbookEntry.";
-
-	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY =
-		"No GuestbookEntry exists with the primary key ";
-
-	private static final String _NO_SUCH_ENTITY_WITH_KEY =
-		"No GuestbookEntry exists with the key {";
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		GuestbookEntryPersistenceImpl.class);
-
-	private static final Set<String> _badColumnNames = SetUtil.fromArray(
-		new String[] {"uuid"});
 
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private GuestbookEntryModelArgumentsResolver
-		_guestbookEntryModelArgumentsResolver;
-
 }

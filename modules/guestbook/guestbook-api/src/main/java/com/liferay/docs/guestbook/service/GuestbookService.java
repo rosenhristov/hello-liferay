@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -29,6 +28,13 @@ import org.osgi.annotation.versioning.ProviderType;
  * service are expected to have security checks based on the propagated JAAS
  * credentials because this service can be accessed remotely.
  *
+ * NOTE FOR DEVELOPERS:
+ * 	 Never modify this interface directly. Add custom service methods to
+ * 	 <code>com.liferay.docs.guestbook.service.impl.GuestbookServiceImpl</code>
+ * 	 and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+ * 	 Consume the guestbook remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>.
+ * 	 Use {@link GuestbookServiceUtil} if injection and service tracking are not available.
+ *
  * @author Rosen Hristov
  * @see GuestbookServiceUtil
  * @generated
@@ -36,23 +42,13 @@ import org.osgi.annotation.versioning.ProviderType;
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(
-	isolation = Isolation.PORTAL,
-	rollbackFor = {PortalException.class, SystemException.class}
-)
+@Transactional(isolation = Isolation.PORTAL, rollbackFor = {PortalException.class, SystemException.class})
 public interface GuestbookService extends BaseService {
-
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the guestbook remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link GuestbookServiceUtil} if injection and service tracking are not available.
-	 */
 
 	/**
 	 * Returns the OSGi service identifier.
-	 *
 	 * @return the OSGi service identifier
 	 */
-	public String getOSGiServiceIdentifier();
+	String getOSGiServiceIdentifier();
 
 }

@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -26,60 +25,42 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.service.component.annotations.Component;
 
+import static java.util.Objects.isNull;
+
 /**
  * The arguments resolver class for retrieving value from Guestbook.
  *
  * @author Rosen Hristov
  * @generated
  */
-@Component(
-	immediate = true,
-	service = {GuestbookModelArgumentsResolver.class, ArgumentsResolver.class}
-)
+@Component(immediate = true, service = {GuestbookModelArgumentsResolver.class, ArgumentsResolver.class})
 public class GuestbookModelArgumentsResolver implements ArgumentsResolver {
 
 	@Override
-	public Object[] getArguments(
-		FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
-		boolean original) {
-
+	public Object[] getArguments(FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn, boolean original) {
 		String[] columnNames = finderPath.getColumnNames();
-
 		if ((columnNames == null) || (columnNames.length == 0)) {
 			if (baseModel.isNew()) {
 				return new Object[0];
 			}
-
 			return null;
 		}
-
-		GuestbookModelImpl guestbookModelImpl = (GuestbookModelImpl)baseModel;
-
+		GuestbookModelImpl guestbookModelImpl = (GuestbookModelImpl) baseModel;
 		long columnBitmask = guestbookModelImpl.getColumnBitmask();
-
 		if (!checkColumn || (columnBitmask == 0)) {
 			return _getValue(guestbookModelImpl, columnNames, original);
 		}
-
-		Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
-			finderPath);
-
-		if (finderPathColumnBitmask == null) {
+		Long finderPathColumnBitmask = finderPathColumnBitmasksCache.get(finderPath);
+		if (isNull(finderPathColumnBitmask)) {
 			finderPathColumnBitmask = 0L;
-
 			for (String columnName : columnNames) {
-				finderPathColumnBitmask |= guestbookModelImpl.getColumnBitmask(
-					columnName);
+				finderPathColumnBitmask |= guestbookModelImpl.getColumnBitmask(columnName);
 			}
-
-			_finderPathColumnBitmasksCache.put(
-				finderPath, finderPathColumnBitmask);
+			finderPathColumnBitmasksCache.put(finderPath, finderPathColumnBitmask);
 		}
-
 		if ((columnBitmask & finderPathColumnBitmask) != 0) {
 			return _getValue(guestbookModelImpl, columnNames, original);
 		}
-
 		return null;
 	}
 
@@ -93,28 +74,18 @@ public class GuestbookModelArgumentsResolver implements ArgumentsResolver {
 		return GuestbookTable.INSTANCE.getTableName();
 	}
 
-	private static Object[] _getValue(
-		GuestbookModelImpl guestbookModelImpl, String[] columnNames,
-		boolean original) {
-
+	private static Object[] _getValue(GuestbookModelImpl guestbookModelImpl, String[] columnNames, boolean original) {
 		Object[] arguments = new Object[columnNames.length];
-
 		for (int i = 0; i < arguments.length; i++) {
 			String columnName = columnNames[i];
-
 			if (original) {
-				arguments[i] = guestbookModelImpl.getColumnOriginalValue(
-					columnName);
-			}
-			else {
+				arguments[i] = guestbookModelImpl.getColumnOriginalValue(columnName);
+			} else {
 				arguments[i] = guestbookModelImpl.getColumnValue(columnName);
 			}
 		}
-
 		return arguments;
 	}
-
-	private static final Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-		new ConcurrentHashMap<>();
+	private static final Map<FinderPath, Long> finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 }

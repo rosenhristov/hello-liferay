@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -102,19 +101,11 @@ public class GuestbookModelImpl
 
 	public static final String TABLE_SQL_CREATE =
 		"create table GB_Guestbook (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,guestbookId LONG not null primary key,name VARCHAR(75) null,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null)";
-
 	public static final String TABLE_SQL_DROP = "drop table GB_Guestbook";
-
-	public static final String ORDER_BY_JPQL =
-		" ORDER BY guestbook.guestbookId ASC";
-
-	public static final String ORDER_BY_SQL =
-		" ORDER BY GB_Guestbook.guestbookId ASC";
-
+	public static final String ORDER_BY_JPQL = " ORDER BY guestbook.guestbookId ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY GB_Guestbook.guestbookId ASC";
 	public static final String DATA_SOURCE = "liferayDataSource";
-
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
-
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
 	/**
@@ -383,7 +374,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_mvccVersion = mvccVersion;
 	}
 
@@ -403,7 +393,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_uuid = uuid;
 	}
 
@@ -447,7 +436,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_name = name;
 	}
 
@@ -462,7 +450,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_groupId = groupId;
 	}
 
@@ -486,7 +473,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_companyId = companyId;
 	}
 
@@ -496,8 +482,7 @@ public class GuestbookModelImpl
 	 */
 	@Deprecated
 	public long getOriginalCompanyId() {
-		return GetterUtil.getLong(
-			this.<Long>getColumnOriginalValue("companyId"));
+		return GetterUtil.getLong(this.<Long>getColumnOriginalValue("companyId"));
 	}
 
 	@JSON
@@ -511,7 +496,6 @@ public class GuestbookModelImpl
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
-
 		_userId = userId;
 	}
 
@@ -519,7 +503,6 @@ public class GuestbookModelImpl
 	public String getUserUuid() {
 		try {
 			User user = UserLocalServiceUtil.getUserById(getUserId());
-
 			return user.getUuid();
 		}
 		catch (PortalException portalException) {
@@ -534,7 +517,7 @@ public class GuestbookModelImpl
 	@JSON
 	@Override
 	public String getUserName() {
-		if (_userName == null) {
+		if (isNull(_userName)) {
 			return "";
 		}
 		else {

@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,6 +13,8 @@
 
 package com.liferay.docs.guestbook.service;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
 /**
@@ -96,17 +97,9 @@ public class GuestbookEntryLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.docs.guestbook.model.GuestbookEntry deleteGuestbookEntry(
-		com.liferay.docs.guestbook.model.GuestbookEntry guestbookEntry) {
+		com.liferay.docs.guestbook.model.GuestbookEntry guestbookEntry) throws PortalException {
 
 		return _guestbookEntryLocalService.deleteGuestbookEntry(guestbookEntry);
-	}
-
-	@Override
-	public com.liferay.docs.guestbook.model.GuestbookEntry deleteGuestbookEntry(
-			com.liferay.docs.guestbook.model.GuestbookEntry entry)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookEntryLocalService.deleteGuestbookEntry(entry);
 	}
 
 	/**
@@ -128,22 +121,13 @@ public class GuestbookEntryLocalServiceWrapper
 		return _guestbookEntryLocalService.deleteGuestbookEntry(entryId);
 	}
 
-	@Override
-	public com.liferay.docs.guestbook.model.GuestbookEntry deleteGuestbookEntry(
-			long entryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookEntryLocalService.deleteGuestbookEntry(entryId);
-	}
-
 	/**
 	 * @throws PortalException
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel deletePersistedModel(
-			com.liferay.portal.kernel.model.PersistedModel persistedModel)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
+				com.liferay.portal.kernel.model.PersistedModel persistedModel)
+			throws com.liferay.portal.kernel.exception.PortalException {
 		return _guestbookEntryLocalService.deletePersistedModel(persistedModel);
 	}
 
@@ -301,38 +285,24 @@ public class GuestbookEntryLocalServiceWrapper
 	 * @return the range of guestbook entries
 	 */
 	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry>
-		getGuestbookEntries(int start, int end) {
-
+	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry> getGuestbookEntries(int start, int end) {
 		return _guestbookEntryLocalService.getGuestbookEntries(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry>
-		getGuestbookEntries(long groupId, long guestbookId) {
-
-		return _guestbookEntryLocalService.getGuestbookEntries(
-			groupId, guestbookId);
+	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry> getGuestbookEntriesInRange(long groupId,
+					long guestbookId, int start, int end)
+			throws com.liferay.portal.kernel.exception.SystemException {
+		return _guestbookEntryLocalService.getGuestbookEntriesInRange(groupId, guestbookId, start, end);
 	}
 
 	@Override
 	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry>
-			getGuestbookEntries(
-				long groupId, long guestbookId, int start, int end)
-		throws com.liferay.portal.kernel.exception.SystemException {
-
-		return _guestbookEntryLocalService.getGuestbookEntries(
-			groupId, guestbookId, start, end);
-	}
-
-	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.GuestbookEntry>
-		getGuestbookEntries(
-			long groupId, long guestbookId, int start, int end,
+	getGuestbookEntriesOrdered(long groupId, long guestbookId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<com.liferay.docs.guestbook.model.GuestbookEntry> obc) {
 
-		return _guestbookEntryLocalService.getGuestbookEntries(
+		return _guestbookEntryLocalService.getGuestbookEntriesOrdered(
 			groupId, guestbookId, start, end, obc);
 	}
 
@@ -397,14 +367,6 @@ public class GuestbookEntryLocalServiceWrapper
 	 * @return the guestbook entry
 	 * @throws PortalException if a guestbook entry with the primary key could not be found
 	 */
-	@Override
-	public com.liferay.docs.guestbook.model.GuestbookEntry getGuestbookEntry(
-			long entryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookEntryLocalService.getGuestbookEntry(entryId);
-	}
-
 	@Override
 	public com.liferay.docs.guestbook.model.GuestbookEntry getGuestbookEntry(
 			long entryId)

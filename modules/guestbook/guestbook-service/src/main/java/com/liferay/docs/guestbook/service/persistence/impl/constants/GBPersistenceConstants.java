@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -29,24 +28,18 @@ import org.osgi.service.component.annotations.Component;
 @Component(immediate = true, service = {})
 public class GBPersistenceConstants {
 
-	public static final String BUNDLE_SYMBOLIC_NAME =
-		"com.liferay.docs.guestbook.service";
+	public static final String BUNDLE_SYMBOLIC_NAME = "com.liferay.docs.guestbook.service";
 
-	public static final String ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER =
-		"(origin.bundle.symbolic.name=" + BUNDLE_SYMBOLIC_NAME + ")";
+	public static final String ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER = "(origin.bundle.symbolic.name=" + BUNDLE_SYMBOLIC_NAME + ")";
 
-	public static final String SERVICE_CONFIGURATION_FILTER =
-		"(&" + ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER + "(name=service))";
+	public static final String SERVICE_CONFIGURATION_FILTER = "(&" + ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER + "(name=service))";
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		Bundle bundle = bundleContext.getBundle();
-
 		if (!BUNDLE_SYMBOLIC_NAME.equals(bundle.getSymbolicName())) {
-			throw new IllegalStateException(
-				StringBundler.concat(
-					"Incorrect ", Constants.BUNDLE_SYMBOLICNAME, " for bundle ",
-					bundle.getSymbolicName()));
+			throw new IllegalStateException(StringBundler.concat("Incorrect ",
+					Constants.BUNDLE_SYMBOLICNAME, " for bundle ", bundle.getSymbolicName()));
 		}
 	}
 

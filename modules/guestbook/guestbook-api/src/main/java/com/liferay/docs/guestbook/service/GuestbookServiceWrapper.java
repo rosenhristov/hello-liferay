@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -23,11 +22,12 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
  * @see GuestbookService
  * @generated
  */
-public class GuestbookServiceWrapper
-	implements GuestbookService, ServiceWrapper<GuestbookService> {
+public class GuestbookServiceWrapper implements GuestbookService, ServiceWrapper<GuestbookService> {
+
+	private GuestbookService guestbookService;
 
 	public GuestbookServiceWrapper(GuestbookService guestbookService) {
-		_guestbookService = guestbookService;
+		this.guestbookService = guestbookService;
 	}
 
 	/**
@@ -37,19 +37,17 @@ public class GuestbookServiceWrapper
 	 */
 	@Override
 	public String getOSGiServiceIdentifier() {
-		return _guestbookService.getOSGiServiceIdentifier();
+		return guestbookService.getOSGiServiceIdentifier();
 	}
 
 	@Override
 	public GuestbookService getWrappedService() {
-		return _guestbookService;
+		return guestbookService;
 	}
 
 	@Override
 	public void setWrappedService(GuestbookService guestbookService) {
-		_guestbookService = guestbookService;
+		this.guestbookService = guestbookService;
 	}
-
-	private GuestbookService _guestbookService;
 
 }

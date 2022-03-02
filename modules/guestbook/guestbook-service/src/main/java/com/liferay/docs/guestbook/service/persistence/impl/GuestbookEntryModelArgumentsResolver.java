@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -26,6 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.service.component.annotations.Component;
 
+import static com.liferay.docs.guestbook.service.persistence.impl.GuestbookEntryPersistenceImpl.FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION;
+import static java.util.Objects.isNull;
+
 /**
  * The arguments resolver class for retrieving value from GuestbookEntry.
  *
@@ -41,56 +43,36 @@ import org.osgi.service.component.annotations.Component;
 public class GuestbookEntryModelArgumentsResolver implements ArgumentsResolver {
 
 	@Override
-	public Object[] getArguments(
-		FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
-		boolean original) {
-
+	public Object[] getArguments(FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn, boolean original) {
 		String[] columnNames = finderPath.getColumnNames();
-
-		if ((columnNames == null) || (columnNames.length == 0)) {
-			if (baseModel.isNew()) {
-				return new Object[0];
-			}
-
-			return null;
+		if ((isNull(columnNames)) || (columnNames.length == 0)) {
+			return baseModel.isNew() ? new Object[0] : null;
 		}
-
-		GuestbookEntryModelImpl guestbookEntryModelImpl =
-			(GuestbookEntryModelImpl)baseModel;
-
+		GuestbookEntryModelImpl guestbookEntryModelImpl = (GuestbookEntryModelImpl) baseModel;
 		long columnBitmask = guestbookEntryModelImpl.getColumnBitmask();
-
 		if (!checkColumn || (columnBitmask == 0)) {
-			return _getValue(guestbookEntryModelImpl, columnNames, original);
+			return getValue(guestbookEntryModelImpl, columnNames, original);
 		}
 
-		Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
-			finderPath);
-
+		Long finderPathColumnBitmask = finderPathColumnBitmasksCache.get(finderPath);
 		if (finderPathColumnBitmask == null) {
 			finderPathColumnBitmask = 0L;
 
 			for (String columnName : columnNames) {
-				finderPathColumnBitmask |=
-					guestbookEntryModelImpl.getColumnBitmask(columnName);
+				//FIXME fix this!
+				finderPathColumnBitmask |= guestbookEntryModelImpl.getColumnBitmask();
 			}
-
-			if (finderPath.isBaseModelResult() &&
-				(GuestbookEntryPersistenceImpl.
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
-						finderPath.getCacheName())) {
-
+			if (finderPath.isBaseModelResult() 
+					&& (FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION == finderPath.getCacheName())) {
 				finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
 			}
-
-			_finderPathColumnBitmasksCache.put(
-				finderPath, finderPathColumnBitmask);
+			finderPathColumnBitmasksCache.put(finderPath, finderPathColumnBitmask);
 		}
 
 		if ((columnBitmask & finderPathColumnBitmask) != 0) {
-			return _getValue(guestbookEntryModelImpl, columnNames, original);
+			return getValue(guestbookEntryModelImpl, columnNames, original);
 		}
-
+		
 		return null;
 	}
 
@@ -104,7 +86,7 @@ public class GuestbookEntryModelArgumentsResolver implements ArgumentsResolver {
 		return GuestbookEntryTable.INSTANCE.getTableName();
 	}
 
-	private static Object[] _getValue(
+	private static Object[] getValue(
 		GuestbookEntryModelImpl guestbookEntryModelImpl, String[] columnNames,
 		boolean original) {
 
@@ -114,19 +96,17 @@ public class GuestbookEntryModelArgumentsResolver implements ArgumentsResolver {
 			String columnName = columnNames[i];
 
 			if (original) {
-				arguments[i] = guestbookEntryModelImpl.getColumnOriginalValue(
-					columnName);
+				arguments[i] = guestbookEntryModelImpl.getColumnOriginalValue(columnName);
 			}
 			else {
-				arguments[i] = guestbookEntryModelImpl.getColumnValue(
-					columnName);
+				arguments[i] = guestbookEntryModelImpl.getColumnValue(columnName);
 			}
 		}
 
 		return arguments;
 	}
 
-	private static final Map<FinderPath, Long> _finderPathColumnBitmasksCache =
+	private static final Map<FinderPath, Long> finderPathColumnBitmasksCache =
 		new ConcurrentHashMap<>();
 
 	private static final long _ORDER_BY_COLUMNS_BITMASK;
@@ -134,8 +114,7 @@ public class GuestbookEntryModelArgumentsResolver implements ArgumentsResolver {
 	static {
 		long orderByColumnsBitmask = 0;
 
-		orderByColumnsBitmask |= GuestbookEntryModelImpl.getColumnBitmask(
-			"createDate");
+		orderByColumnsBitmask |= GuestbookEntryModelImpl.getColumnBitmask("createDate");
 
 		_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
 	}

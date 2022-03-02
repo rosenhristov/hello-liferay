@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -202,6 +201,11 @@ public class GuestbookEntryModelImpl extends BaseModelImpl<GuestbookEntry> imple
 	}
 
 	public GuestbookEntryModelImpl() {
+	}
+
+	public static long getColumnBitmask(String createDate) {
+		//FIXME Fix this!
+		return 0L;
 	}
 
 	@Override
@@ -793,7 +797,7 @@ public class GuestbookEntryModelImpl extends BaseModelImpl<GuestbookEntry> imple
 		}
 	}
 
-	public long getColumnBitmask() {
+	public static long getColumnBitmask() {
 		return _columnBitmask;
 	}
 
@@ -1119,7 +1123,14 @@ public class GuestbookEntryModelImpl extends BaseModelImpl<GuestbookEntry> imple
 	private long _statusByUserId;
 	private String _statusByUserName;
 	private Date _statusDate;
-	private long _columnBitmask;
+	private static long _columnBitmask;
 	private GuestbookEntry _escapedModel;
 
+	public Object getColumnOriginalValue(String columnName) {
+		return null;
+	}
+
+	public Object getColumnValue(String columnName) {
+		return null;
+	}
 }

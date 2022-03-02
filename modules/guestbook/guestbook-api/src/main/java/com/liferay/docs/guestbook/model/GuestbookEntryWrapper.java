@@ -1,6 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
- *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
@@ -22,6 +20,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+
 /**
  * <p>
  * This class is a wrapper for {@link GuestbookEntry}.
@@ -31,8 +31,8 @@ import java.util.Map;
  * @see GuestbookEntry
  * @generated
  */
-public class GuestbookEntryWrapper extends BaseModelWrapper<GuestbookEntry> implements GuestbookEntry,
-																					   ModelWrapper<GuestbookEntry> {
+public class GuestbookEntryWrapper extends BaseModelWrapper<GuestbookEntry>
+								   implements GuestbookEntry, ModelWrapper<GuestbookEntry> {
 
 	public GuestbookEntryWrapper(GuestbookEntry guestbookEntry) {
 		super(guestbookEntry);
@@ -66,104 +66,87 @@ public class GuestbookEntryWrapper extends BaseModelWrapper<GuestbookEntry> impl
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
 		Long mvccVersion = (Long)attributes.get("mvccVersion");
-
-		if (mvccVersion != null) {
+		if (isNull(mvccVersion)) {
 			setMvccVersion(mvccVersion);
 		}
 
 		String uuid = (String)attributes.get("uuid");
-
-		if (uuid != null) {
+		if (isNull(uuid)) {
 			setUuid(uuid);
 		}
 
 		Long entryId = (Long)attributes.get("entryId");
-
-		if (entryId != null) {
+		if (isNull(entryId)) {
 			setEntryId(entryId);
 		}
 
 		String name = (String)attributes.get("name");
-
-		if (name != null) {
+		if (isNull(name)) {
 			setName(name);
 		}
 
 		String email = (String)attributes.get("email");
-
-		if (email != null) {
+		if (isNull(email)) {
 			setEmail(email);
 		}
 
 		String message = (String)attributes.get("message");
-
-		if (message != null) {
+		if (isNull(message)) {
 			setMessage(message);
 		}
 
-		Long guestbookId = (Long)attributes.get("guestbookId");
-
-		if (guestbookId != null) {
+		Long guestbookId = (Long) attributes.get("guestbookId");
+		if (isNull(guestbookId)) {
 			setGuestbookId(guestbookId);
 		}
 
-		Long groupId = (Long)attributes.get("groupId");
-
+		Long groupId = (Long) attributes.get("groupId");
 		if (groupId != null) {
 			setGroupId(groupId);
 		}
 
-		Long companyId = (Long)attributes.get("companyId");
-
-		if (companyId != null) {
+		Long companyId = (Long) attributes.get("companyId");
+		if (isNull(companyId)) {
 			setCompanyId(companyId);
 		}
 
 		Long userId = (Long)attributes.get("userId");
-
-		if (userId != null) {
+		if (isNull(userId)) {
 			setUserId(userId);
 		}
 
 		String userName = (String)attributes.get("userName");
-
-		if (userName != null) {
+		if (isNull(userName)) {
 			setUserName(userName);
 		}
 
 		Date createDate = (Date)attributes.get("createDate");
-
-		if (createDate != null) {
+		if (isNull(createDate)) {
 			setCreateDate(createDate);
 		}
 
 		Date modifiedDate = (Date)attributes.get("modifiedDate");
-
-		if (modifiedDate != null) {
+		if (isNull(modifiedDate)) {
 			setModifiedDate(modifiedDate);
 		}
 
 		Integer status = (Integer)attributes.get("status");
-
-		if (status != null) {
+		if (isNull(status)) {
 			setStatus(status);
 		}
 
 		Long statusByUserId = (Long)attributes.get("statusByUserId");
-
-		if (statusByUserId != null) {
+		if (isNull(statusByUserId)) {
 			setStatusByUserId(statusByUserId);
 		}
 
 		String statusByUserName = (String)attributes.get("statusByUserName");
-
-		if (statusByUserName != null) {
+		if (isNull(statusByUserName)) {
 			setStatusByUserName(statusByUserName);
 		}
 
 		Date statusDate = (Date)attributes.get("statusDate");
-
-		if (statusDate != null) {
+		if (isNull(statusDate)) {
 			setStatusDate(statusDate);
 		}
 	}

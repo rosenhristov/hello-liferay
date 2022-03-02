@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -23,12 +22,11 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
  * @see GuestbookEntryService
  * @generated
  */
-public class GuestbookEntryServiceWrapper
-	implements GuestbookEntryService, ServiceWrapper<GuestbookEntryService> {
+public class GuestbookEntryServiceWrapper implements GuestbookEntryService, ServiceWrapper<GuestbookEntryService> {
 
-	public GuestbookEntryServiceWrapper(
-		GuestbookEntryService guestbookEntryService) {
+	private GuestbookEntryService _guestbookEntryService;
 
+	public GuestbookEntryServiceWrapper(GuestbookEntryService guestbookEntryService) {
 		_guestbookEntryService = guestbookEntryService;
 	}
 
@@ -51,7 +49,4 @@ public class GuestbookEntryServiceWrapper
 	public void setWrappedService(GuestbookEntryService guestbookEntryService) {
 		_guestbookEntryService = guestbookEntryService;
 	}
-
-	private GuestbookEntryService _guestbookEntryService;
-
 }

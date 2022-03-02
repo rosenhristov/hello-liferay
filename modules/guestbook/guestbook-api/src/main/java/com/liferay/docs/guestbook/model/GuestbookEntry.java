@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -34,7 +33,7 @@ public interface GuestbookEntry extends GuestbookEntryModel, PersistedModel {
 	 * NOTE FOR DEVELOPERS:
 	 * Never modify this interface directly. Add methods to <code>com.liferay.docs.guestbook.model.impl.GuestbookEntryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	Accessor<GuestbookEntry, Long> ENTRY_ID_ACCESSOR = new Accessor<GuestbookEntry, Long>() {
+	Accessor<GuestbookEntry, Long> ENTRY_ID_ACCESSOR = new Accessor<>() {
 			@Override
 			public Long get(GuestbookEntry guestbookEntry) {
 				return guestbookEntry.getEntryId();

@@ -1,6 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
- *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General   License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
@@ -37,8 +35,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @ProviderType
-  interface GuestbookModel extends BaseModel<Guestbook>, GroupedModel, MVCCModel, 
-										ShardedModel, StagedAuditedModel {
+interface GuestbookModel extends BaseModel<Guestbook>, GroupedModel, MVCCModel, ShardedModel, StagedAuditedModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 * Never modify or reference this interface directly. All methods that expect a guestbook model instance should use the {@link Guestbook} interface instead.
@@ -60,7 +57,6 @@ import org.osgi.annotation.versioning.ProviderType;
 
 	/**
 	 * Returns the mvcc version of this guestbook.
-	 *
 	 * @return the mvcc version of this guestbook
 	 */
 	@Override

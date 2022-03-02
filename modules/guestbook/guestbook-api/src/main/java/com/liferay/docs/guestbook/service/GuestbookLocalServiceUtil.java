@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,8 +14,13 @@
 package com.liferay.docs.guestbook.service;
 
 import com.liferay.docs.guestbook.model.Guestbook;
+import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -34,17 +38,18 @@ import java.util.List;
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
+ * NOTE FOR DEVELOPERS:
+ * 	 Never modify this class directly. Add custom service methods to
+ * 	 <code>com.liferay.docs.guestbook.service.impl.GuestbookLocalServiceImpl</code>
+ * 	 and rerun ServiceBuilder to regenerate this class.
+ *
  * @author Rosen Hristov
  * @see GuestbookLocalService
  * @generated
  */
 public class GuestbookLocalServiceUtil {
 
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify this class directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
-	 */
+	private static volatile GuestbookLocalService service;
 
 	/**
 	 * Adds the guestbook to the database. Also notifies the appropriate model listeners.
@@ -178,12 +183,8 @@ public class GuestbookLocalServiceUtil {
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching rows
 	 */
-	public static <T> List<T> dynamicQuery(
-		DynamicQuery dynamicQuery, int start, int end,
-		OrderByComparator<T> orderByComparator) {
-
-		return getService().dynamicQuery(
-			dynamicQuery, start, end, orderByComparator);
+	public static <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start, int end, OrderByComparator<T> orderByComparator) {
+		return getService().dynamicQuery(dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -203,10 +204,7 @@ public class GuestbookLocalServiceUtil {
 	 * @param projection the projection to apply to the query
 	 * @return the number of rows matching the dynamic query
 	 */
-	public static long dynamicQueryCount(
-		DynamicQuery dynamicQuery,
-		com.liferay.portal.kernel.dao.orm.Projection projection) {
-
+	public static long dynamicQueryCount(DynamicQuery dynamicQuery, Projection projection) {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
 	}
 
@@ -221,22 +219,15 @@ public class GuestbookLocalServiceUtil {
 	 * @param groupId the primary key of the group
 	 * @return the matching guestbook, or <code>null</code> if a matching guestbook could not be found
 	 */
-	public static Guestbook fetchGuestbookByUuidAndGroupId(
-		String uuid, long groupId) {
-
+	public static Guestbook fetchGuestbookByUuidAndGroupId(String uuid, long groupId) {
 		return getService().fetchGuestbookByUuidAndGroupId(uuid, groupId);
 	}
 
-	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
-		getActionableDynamicQuery() {
+	public static ActionableDynamicQuery getActionableDynamicQuery() {
 		return getService().getActionableDynamicQuery();
 	}
 
-	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
-		getExportActionableDynamicQuery(
-			com.liferay.exportimport.kernel.lar.PortletDataContext
-				portletDataContext) {
-
+	public static ExportActionableDynamicQuery getExportActionableDynamicQuery(PortletDataContext portletDataContext) {
 		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 
@@ -247,9 +238,7 @@ public class GuestbookLocalServiceUtil {
 	 * @return the guestbook
 	 * @throws PortalException if a guestbook with the primary key could not be found
 	 */
-	public static Guestbook getGuestbook(long guestbookId)
-		throws PortalException {
-
+	public static Guestbook getGuestbook(long guestbookId) throws PortalException {
 		return getService().getGuestbook(guestbookId);
 	}
 
@@ -261,10 +250,7 @@ public class GuestbookLocalServiceUtil {
 	 * @return the matching guestbook
 	 * @throws PortalException if a matching guestbook could not be found
 	 */
-	public static Guestbook getGuestbookByUuidAndGroupId(
-			String uuid, long groupId)
-		throws PortalException {
-
+	public static Guestbook getGuestbookByUuidAndGroupId(String uuid, long groupId) throws PortalException {
 		return getService().getGuestbookByUuidAndGroupId(uuid, groupId);
 	}
 
@@ -290,9 +276,7 @@ public class GuestbookLocalServiceUtil {
 	 * @param companyId the primary key of the company
 	 * @return the matching guestbooks, or an empty list if no matches were found
 	 */
-	public static List<Guestbook> getGuestbooksByUuidAndCompanyId(
-		String uuid, long companyId) {
-
+	public static List<Guestbook> getGuestbooksByUuidAndCompanyId(String uuid, long companyId) {
 		return getService().getGuestbooksByUuidAndCompanyId(uuid, companyId);
 	}
 
@@ -306,12 +290,9 @@ public class GuestbookLocalServiceUtil {
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the range of matching guestbooks, or an empty list if no matches were found
 	 */
-	public static List<Guestbook> getGuestbooksByUuidAndCompanyId(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<Guestbook> orderByComparator) {
-
-		return getService().getGuestbooksByUuidAndCompanyId(
-			uuid, companyId, start, end, orderByComparator);
+	public static List<Guestbook> getGuestbooksByUuidAndCompanyId(String uuid, long companyId, int start, int end,
+																  OrderByComparator<Guestbook> orderByComparator) {
+		return getService().getGuestbooksByUuidAndCompanyId(uuid, companyId, start, end, orderByComparator);
 	}
 
 	/**
@@ -323,10 +304,7 @@ public class GuestbookLocalServiceUtil {
 		return getService().getGuestbooksCount();
 	}
 
-	public static
-		com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
-			getIndexableActionableDynamicQuery() {
-
+	public static IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
@@ -342,9 +320,7 @@ public class GuestbookLocalServiceUtil {
 	/**
 	 * @throws PortalException
 	 */
-	public static PersistedModel getPersistedModel(Serializable primaryKeyObj)
-		throws PortalException {
-
+	public static PersistedModel getPersistedModel(Serializable primaryKeyObj) throws PortalException {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
@@ -363,9 +339,7 @@ public class GuestbookLocalServiceUtil {
 	}
 
 	public static GuestbookLocalService getService() {
-		return _service;
+		return service;
 	}
-
-	private static volatile GuestbookLocalService _service;
 
 }

@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,21 +21,22 @@ package com.liferay.docs.guestbook.service;
  * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
+ * NOTE FOR DEVELOPERS:
+ * 	Never modify this class directly. Add custom service methods to
+ * 	<code>com.liferay.docs.guestbook.service.impl.GuestbookEntryServiceImpl</code>
+ * 	and rerun ServiceBuilder to regenerate this class.
+ *
+ *
  * @author Rosen Hristov
  * @see GuestbookEntryService
  * @generated
  */
 public class GuestbookEntryServiceUtil {
 
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify this class directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookEntryServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
-	 */
+	private static volatile GuestbookEntryService _service;
 
 	/**
 	 * Returns the OSGi service identifier.
-	 *
 	 * @return the OSGi service identifier
 	 */
 	public static java.lang.String getOSGiServiceIdentifier() {
@@ -46,7 +46,4 @@ public class GuestbookEntryServiceUtil {
 	public static GuestbookEntryService getService() {
 		return _service;
 	}
-
-	private static volatile GuestbookEntryService _service;
-
 }

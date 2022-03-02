@@ -1,6 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
- *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
@@ -30,16 +28,16 @@ import java.util.List;
 @Deprecated
 public class GuestbookSoap implements Serializable {
 
-	private long _mvccVersion;
-	private String _uuid;
-	private long _guestbookId;
-	private String _name;
-	private long _groupId;
-	private long _companyId;
-	private long _userId;
-	private String _userName;
-	private Date _createDate;
-	private Date _modifiedDate;
+	private long mvccVersion;
+	private String uuid;
+	private long guestbookId;
+	private String name;
+	private long groupId;
+	private long companyId;
+	private long userId;
+	private String userName;
+	private Date createDate;
+	private Date modifiedDate;
 
 	public static GuestbookSoap toSoapModel(Guestbook model) {
 		GuestbookSoap soapModel = new GuestbookSoap();
@@ -91,7 +89,7 @@ public class GuestbookSoap implements Serializable {
 	}
 
 	public long getPrimaryKey() {
-		return _guestbookId;
+		return guestbookId;
 	}
 
 	public void setPrimaryKey(long pk) {
@@ -99,82 +97,82 @@ public class GuestbookSoap implements Serializable {
 	}
 
 	public long getMvccVersion() {
-		return _mvccVersion;
+		return mvccVersion;
 	}
 
 	public void setMvccVersion(long mvccVersion) {
-		_mvccVersion = mvccVersion;
+		this.mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
-		return _uuid;
+		return uuid;
 	}
 
 	public void setUuid(String uuid) {
-		_uuid = uuid;
+		this.uuid = uuid;
 	}
 
 	public long getGuestbookId() {
-		return _guestbookId;
+		return guestbookId;
 	}
 
 	public void setGuestbookId(long guestbookId) {
-		_guestbookId = guestbookId;
+		this.guestbookId = guestbookId;
 	}
 
 	public String getName() {
-		return _name;
+		return name;
 	}
 
 	public void setName(String name) {
-		_name = name;
+		this.name = name;
 	}
 
 	public long getGroupId() {
-		return _groupId;
+		return groupId;
 	}
 
 	public void setGroupId(long groupId) {
-		_groupId = groupId;
+		this.groupId = groupId;
 	}
 
 	public long getCompanyId() {
-		return _companyId;
+		return companyId;
 	}
 
 	public void setCompanyId(long companyId) {
-		_companyId = companyId;
+		this.companyId = companyId;
 	}
 
 	public long getUserId() {
-		return _userId;
+		return userId;
 	}
 
 	public void setUserId(long userId) {
-		_userId = userId;
+		this.userId = userId;
 	}
 
 	public String getUserName() {
-		return _userName;
+		return userName;
 	}
 
 	public void setUserName(String userName) {
-		_userName = userName;
+		this.userName = userName;
 	}
 
 	public Date getCreateDate() {
-		return _createDate;
+		return createDate;
 	}
 
 	public void setCreateDate(Date createDate) {
-		_createDate = createDate;
+		this.createDate = createDate;
 	}
 
 	public Date getModifiedDate() {
-		return _modifiedDate;
+		return modifiedDate;
 	}
 
 	public void setModifiedDate(Date modifiedDate) {
-		_modifiedDate = modifiedDate;
+		this.modifiedDate = modifiedDate;
 	}
 }

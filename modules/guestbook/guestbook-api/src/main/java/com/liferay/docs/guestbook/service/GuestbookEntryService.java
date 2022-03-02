@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -44,7 +43,6 @@ public interface GuestbookEntryService extends BaseService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
-	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the guestbook entry remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link GuestbookEntryServiceUtil} if injection and service tracking are not available.
 	 */
 
@@ -53,6 +51,6 @@ public interface GuestbookEntryService extends BaseService {
 	 *
 	 * @return the OSGi service identifier
 	 */
-	public String getOSGiServiceIdentifier();
+	String getOSGiServiceIdentifier();
 
 }

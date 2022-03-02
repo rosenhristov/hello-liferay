@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,12 +16,14 @@ package com.liferay.docs.guestbook.service.impl;
 import com.liferay.docs.guestbook.exception.GuestbookNameException;
 import com.liferay.docs.guestbook.model.Guestbook;
 import com.liferay.docs.guestbook.service.base.GuestbookLocalServiceBaseImpl;
-import com.liferay.headless.commerce.admin.account.dto.v1_0.User;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Date;
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -35,9 +36,8 @@ import org.osgi.service.component.annotations.Component;
 )
 public class GuestbookLocalServiceImpl extends GuestbookLocalServiceBaseImpl {
 	
-	public Guestbook addGuestbook(long userId, String name, ServiceContext serviceContext) 
-			throws PortalException {
-		User user = (User) userLocalService.getUserById(userId);
+	public Guestbook addGuestbook(long userId, String name, ServiceContext serviceContext) throws PortalException {
+		User user = userLocalService.getUserById(userId);
 		Date now = new Date();
 		
 		validate(name);
@@ -60,7 +60,13 @@ public class GuestbookLocalServiceImpl extends GuestbookLocalServiceBaseImpl {
 
 		return guestbook;
 	}
-	
+
+	@Override
+	public List<Guestbook> getGuestbooks(long groupId) {
+		// TODO implement correctly
+		return null;
+	}
+
 	protected void validate(String name) throws PortalException {
 		if (Validator.isNull(name)) {
 			throw new GuestbookNameException();

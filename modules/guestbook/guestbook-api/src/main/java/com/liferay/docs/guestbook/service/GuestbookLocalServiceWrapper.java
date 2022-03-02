@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,10 +14,19 @@
 package com.liferay.docs.guestbook.service;
 
 import com.liferay.docs.guestbook.model.Guestbook;
+import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceWrapper;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,8 +38,10 @@ import java.util.List;
  */
 public class GuestbookLocalServiceWrapper implements GuestbookLocalService, ServiceWrapper<GuestbookLocalService> {
 
+	private GuestbookLocalService guestbookLocalService;
+
 	public GuestbookLocalServiceWrapper(GuestbookLocalService guestbookLocalService) {
-		_guestbookLocalService = guestbookLocalService;
+		this.guestbookLocalService = guestbookLocalService;
 	}
 
 	/**
@@ -45,19 +55,14 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the guestbook that was added
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook addGuestbook(
-		com.liferay.docs.guestbook.model.Guestbook guestbook) {
-
-		return _guestbookLocalService.addGuestbook(guestbook);
+	public com.liferay.docs.guestbook.model.Guestbook addGuestbook(Guestbook guestbook) {
+		return guestbookLocalService.addGuestbook(guestbook);
 	}
 
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook addGuestbook(
-			long userId, String name, ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.addGuestbook(
-			userId, name, serviceContext);
+	public Guestbook addGuestbook(long userId, String name, ServiceContext serviceContext)
+									throws PortalException {
+		return guestbookLocalService.addGuestbook(userId, name, serviceContext);
 	}
 
 	/**
@@ -67,21 +72,16 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the new guestbook
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook createGuestbook(
-		long guestbookId) {
-
-		return _guestbookLocalService.createGuestbook(guestbookId);
+	public com.liferay.docs.guestbook.model.Guestbook createGuestbook(long guestbookId) {
+		return guestbookLocalService.createGuestbook(guestbookId);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
-			java.io.Serializable primaryKeyObj)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.createPersistedModel(primaryKeyObj);
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj) throws PortalException {
+		return guestbookLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -95,10 +95,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the guestbook that was removed
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook deleteGuestbook(
-		com.liferay.docs.guestbook.model.Guestbook guestbook) {
-
-		return _guestbookLocalService.deleteGuestbook(guestbook);
+	public com.liferay.docs.guestbook.model.Guestbook deleteGuestbook(Guestbook guestbook) {
+		return guestbookLocalService.deleteGuestbook(guestbook);
 	}
 
 	/**
@@ -113,39 +111,32 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @throws PortalException if a guestbook with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook deleteGuestbook(
-			long guestbookId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.deleteGuestbook(guestbookId);
+	public com.liferay.docs.guestbook.model.Guestbook deleteGuestbook(long guestbookId) throws PortalException {
+		return guestbookLocalService.deleteGuestbook(guestbookId);
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PersistedModel deletePersistedModel(
-			com.liferay.portal.kernel.model.PersistedModel persistedModel)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.deletePersistedModel(persistedModel);
+	public com.liferay.portal.kernel.model.PersistedModel deletePersistedModel(PersistedModel persistedModel)
+			throws PortalException {
+		return guestbookLocalService.deletePersistedModel(persistedModel);
 	}
 
 	@Override
-	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
-		return _guestbookLocalService.dslQuery(dslQuery);
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return guestbookLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
-	public int dslQueryCount(
-		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
-
-		return _guestbookLocalService.dslQueryCount(dslQuery);
+	public int dslQueryCount(DSLQuery dslQuery) {
+		return guestbookLocalService.dslQueryCount(dslQuery);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
-		return _guestbookLocalService.dynamicQuery();
+	public DynamicQuery dynamicQuery() {
+		return guestbookLocalService.dynamicQuery();
 	}
 
 	/**
@@ -155,10 +146,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the matching rows
 	 */
 	@Override
-	public <T> java.util.List<T> dynamicQuery(
-		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery) {
-
-		return _guestbookLocalService.dynamicQuery(dynamicQuery);
+	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery) {
+		return guestbookLocalService.dynamicQuery(dynamicQuery);
 	}
 
 	/**
@@ -174,11 +163,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the range of matching rows
 	 */
 	@Override
-	public <T> java.util.List<T> dynamicQuery(
-		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery, int start,
-		int end) {
-
-		return _guestbookLocalService.dynamicQuery(dynamicQuery, start, end);
+	public <T> java.util.List<T> dynamicQuery(DynamicQuery dynamicQuery, int start, int end) {
+		return guestbookLocalService.dynamicQuery(dynamicQuery, start, end);
 	}
 
 	/**
@@ -195,13 +181,9 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the ordered range of matching rows
 	 */
 	@Override
-	public <T> java.util.List<T> dynamicQuery(
-		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery, int start,
-		int end,
-		com.liferay.portal.kernel.util.OrderByComparator<T> orderByComparator) {
-
-		return _guestbookLocalService.dynamicQuery(
-			dynamicQuery, start, end, orderByComparator);
+	public <T> java.util.List<T> dynamicQuery(DynamicQuery dynamicQuery, int start, int end,
+											  OrderByComparator<T> orderByComparator) {
+		return guestbookLocalService.dynamicQuery(dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -211,10 +193,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(
-		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery) {
-
-		return _guestbookLocalService.dynamicQueryCount(dynamicQuery);
+	public long dynamicQueryCount(DynamicQuery dynamicQuery) {
+		return guestbookLocalService.dynamicQueryCount(dynamicQuery);
 	}
 
 	/**
@@ -225,19 +205,13 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(
-		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery,
-		com.liferay.portal.kernel.dao.orm.Projection projection) {
-
-		return _guestbookLocalService.dynamicQueryCount(
-			dynamicQuery, projection);
+	public long dynamicQueryCount(DynamicQuery dynamicQuery, Projection projection) {
+		return guestbookLocalService.dynamicQueryCount(dynamicQuery, projection);
 	}
 
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook fetchGuestbook(
-		long guestbookId) {
-
-		return _guestbookLocalService.fetchGuestbook(guestbookId);
+	public com.liferay.docs.guestbook.model.Guestbook fetchGuestbook(long guestbookId) {
+		return guestbookLocalService.fetchGuestbook(guestbookId);
 	}
 
 	/**
@@ -248,28 +222,18 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the matching guestbook, or <code>null</code> if a matching guestbook could not be found
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook
-		fetchGuestbookByUuidAndGroupId(String uuid, long groupId) {
-
-		return _guestbookLocalService.fetchGuestbookByUuidAndGroupId(
-			uuid, groupId);
+	public com.liferay.docs.guestbook.model.Guestbook fetchGuestbookByUuidAndGroupId(String uuid, long groupId) {
+		return guestbookLocalService.fetchGuestbookByUuidAndGroupId(uuid, groupId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
-		getActionableDynamicQuery() {
-
-		return _guestbookLocalService.getActionableDynamicQuery();
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery() {
+		return guestbookLocalService.getActionableDynamicQuery();
 	}
 
 	@Override
-	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
-		getExportActionableDynamicQuery(
-			com.liferay.exportimport.kernel.lar.PortletDataContext
-				portletDataContext) {
-
-		return _guestbookLocalService.getExportActionableDynamicQuery(
-			portletDataContext);
+	public ExportActionableDynamicQuery getExportActionableDynamicQuery(PortletDataContext portletDataContext) {
+		return guestbookLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	/**
@@ -280,11 +244,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @throws PortalException if a guestbook with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook getGuestbook(
-			long guestbookId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.getGuestbook(guestbookId);
+	public com.liferay.docs.guestbook.model.Guestbook getGuestbook(long guestbookId) throws PortalException {
+		return guestbookLocalService.getGuestbook(guestbookId);
 	}
 
 	/**
@@ -296,12 +257,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @throws PortalException if a matching guestbook could not be found
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook
-			getGuestbookByUuidAndGroupId(String uuid, long groupId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.getGuestbookByUuidAndGroupId(
-			uuid, groupId);
+	public Guestbook getGuestbookByUuidAndGroupId(String uuid, long groupId) throws PortalException {
+		return guestbookLocalService.getGuestbookByUuidAndGroupId(uuid, groupId);
 	}
 
 	/**
@@ -316,10 +273,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the range of guestbooks
 	 */
 	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.Guestbook>
-		getGuestbooks(int start, int end) {
-
-		return _guestbookLocalService.getGuestbooks(start, end);
+	public List<Guestbook> getGuestbooks(int start, int end) {
+		return guestbookLocalService.getGuestbooks(start, end);
 	}
 
 	/**
@@ -330,11 +285,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the matching guestbooks, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.Guestbook>
-		getGuestbooksByUuidAndCompanyId(String uuid, long companyId) {
-
-		return _guestbookLocalService.getGuestbooksByUuidAndCompanyId(
-			uuid, companyId);
+	public List<com.liferay.docs.guestbook.model.Guestbook>		getGuestbooksByUuidAndCompanyId(String uuid, long companyId) {
+		return guestbookLocalService.getGuestbooksByUuidAndCompanyId(uuid, companyId);
 	}
 
 	/**
@@ -348,15 +300,8 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the range of matching guestbooks, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.docs.guestbook.model.Guestbook>
-		getGuestbooksByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.docs.guestbook.model.Guestbook>
-					orderByComparator) {
-
-		return _guestbookLocalService.getGuestbooksByUuidAndCompanyId(
-			uuid, companyId, start, end, orderByComparator);
+	public List<Guestbook> getGuestbooksByUuidAndCompanyId(String uuid, long companyId, int start, int end, OrderByComparator<Guestbook> orderByComparator) {
+		return guestbookLocalService.getGuestbooksByUuidAndCompanyId(uuid, companyId, start, end, orderByComparator);
 	}
 
 	/**
@@ -366,35 +311,29 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 */
 	@Override
 	public int getGuestbooksCount() {
-		return _guestbookLocalService.getGuestbooksCount();
+		return guestbookLocalService.getGuestbooksCount();
 	}
 
 	@Override
-	public com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
-		getIndexableActionableDynamicQuery() {
-
-		return _guestbookLocalService.getIndexableActionableDynamicQuery();
+	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
+		return guestbookLocalService.getIndexableActionableDynamicQuery();
 	}
 
 	/**
 	 * Returns the OSGi service identifier.
-	 *
 	 * @return the OSGi service identifier
 	 */
 	@Override
 	public String getOSGiServiceIdentifier() {
-		return _guestbookLocalService.getOSGiServiceIdentifier();
+		return guestbookLocalService.getOSGiServiceIdentifier();
 	}
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
-			java.io.Serializable primaryKeyObj)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _guestbookLocalService.getPersistedModel(primaryKeyObj);
+	public PersistedModel getPersistedModel(Serializable primaryKeyObj) throws PortalException {
+		return guestbookLocalService.getPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -408,27 +347,23 @@ public class GuestbookLocalServiceWrapper implements GuestbookLocalService, Serv
 	 * @return the guestbook that was updated
 	 */
 	@Override
-	public com.liferay.docs.guestbook.model.Guestbook updateGuestbook(
-		com.liferay.docs.guestbook.model.Guestbook guestbook) {
-
-		return _guestbookLocalService.updateGuestbook(guestbook);
+	public Guestbook updateGuestbook(Guestbook guestbook) {
+		return guestbookLocalService.updateGuestbook(guestbook);
 	}
 
 	@Override
 	public List<Guestbook> getGuestbooks(long groupId) {
-		return null;
+		return getWrappedService().getGuestbooks(groupId);
 	}
 
 	@Override
 	public GuestbookLocalService getWrappedService() {
-		return _guestbookLocalService;
+		return guestbookLocalService;
 	}
 
 	@Override
 	public void setWrappedService(GuestbookLocalService guestbookLocalService) {
-		_guestbookLocalService = guestbookLocalService;
+		this.guestbookLocalService = guestbookLocalService;
 	}
-
-	private GuestbookLocalService _guestbookLocalService;
 
 }

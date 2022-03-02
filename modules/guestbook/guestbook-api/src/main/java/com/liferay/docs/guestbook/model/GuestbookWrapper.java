@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,6 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Objects.nonNull;
 
 /**
  * <p>
@@ -58,62 +59,43 @@ public class GuestbookWrapper extends BaseModelWrapper<Guestbook> implements Gue
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
 		Long mvccVersion = (Long)attributes.get("mvccVersion");
-
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
 		}
-
-		String uuid = (String)attributes.get("uuid");
-
-		if (uuid != null) {
+		String uuid = (String) attributes.get("uuid");
+		if (nonNull(uuid)) {
 			setUuid(uuid);
 		}
-
-		Long guestbookId = (Long)attributes.get("guestbookId");
-
-		if (guestbookId != null) {
+		Long guestbookId = (Long) attributes.get("guestbookId");
+		if (nonNull(guestbookId)) {
 			setGuestbookId(guestbookId);
 		}
-
-		String name = (String)attributes.get("name");
-
-		if (name != null) {
+		String name = (String) attributes.get("name");
+		if (nonNull(name)) {
 			setName(name);
 		}
-
-		Long groupId = (Long)attributes.get("groupId");
-
-		if (groupId != null) {
+		Long groupId = (Long) attributes.get("groupId");
+		if (nonNull(groupId)) {
 			setGroupId(groupId);
 		}
-
-		Long companyId = (Long)attributes.get("companyId");
-
-		if (companyId != null) {
+		Long companyId = (Long) attributes.get("companyId");
+		if (nonNull(companyId)) {
 			setCompanyId(companyId);
 		}
-
-		Long userId = (Long)attributes.get("userId");
-
-		if (userId != null) {
+		Long userId = (Long) attributes.get("userId");
+		if (nonNull(userId)) {
 			setUserId(userId);
 		}
-
-		String userName = (String)attributes.get("userName");
-
+		String userName = (String) attributes.get("userName");
 		if (userName != null) {
 			setUserName(userName);
 		}
-
-		Date createDate = (Date)attributes.get("createDate");
-
-		if (createDate != null) {
+		Date createDate = (Date) attributes.get("createDate");
+		if (nonNull(createDate)) {
 			setCreateDate(createDate);
 		}
-
-		Date modifiedDate = (Date)attributes.get("modifiedDate");
-
-		if (modifiedDate != null) {
+		Date modifiedDate = (Date) attributes.get("modifiedDate");
+		if (nonNull(modifiedDate)) {
 			setModifiedDate(modifiedDate);
 		}
 	}

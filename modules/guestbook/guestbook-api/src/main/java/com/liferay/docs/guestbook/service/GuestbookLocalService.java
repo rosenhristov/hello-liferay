@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -47,6 +46,14 @@ import org.osgi.annotation.versioning.ProviderType;
  * credentials because this service can only be accessed from within the same
  * VM.
  *
+ * NOTE FOR DEVELOPERS:
+ *  Never modify this interface directly. Add custom service methods to
+ *  <code>com.liferay.docs.guestbook.service.impl.GuestbookLocalServiceImpl</code>
+ *  and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+ *  Consume the guestbook local service via injection or a
+ *  <code>org.osgi.util.tracker.ServiceTracker</code>.
+ *  Use {@link GuestbookLocalServiceUtil} if injection and service tracking are not available.
+ *
  * @author Rosen Hristov
  * @see GuestbookLocalServiceUtil
  * @generated
@@ -56,14 +63,7 @@ import org.osgi.annotation.versioning.ProviderType;
 	isolation = Isolation.PORTAL,
 	rollbackFor = {PortalException.class, SystemException.class}
 )
-public interface GuestbookLocalService
-	extends BaseLocalService, PersistedModelLocalService {
-
-	/*
-	 * NOTE FOR DEVELOPERS:
-	 *
-	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.docs.guestbook.service.impl.GuestbookLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the guestbook local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link GuestbookLocalServiceUtil} if injection and service tracking are not available.
-	 */
+public interface GuestbookLocalService extends BaseLocalService, PersistedModelLocalService {
 
 	/**
 	 * Adds the guestbook to the database. Also notifies the appropriate model listeners.
@@ -76,11 +76,9 @@ public interface GuestbookLocalService
 	 * @return the guestbook that was added
 	 */
 	@Indexable(type = IndexableType.REINDEX)
-	public Guestbook addGuestbook(Guestbook guestbook);
+	Guestbook addGuestbook(Guestbook guestbook);
 
-	public Guestbook addGuestbook(
-			long userId, String name, ServiceContext serviceContext)
-		throws PortalException;
+	Guestbook addGuestbook(long userId, String name, ServiceContext serviceContext) throws PortalException;
 
 	/**
 	 * Creates a new guestbook with the primary key. Does not add the guestbook to the database.
@@ -89,13 +87,12 @@ public interface GuestbookLocalService
 	 * @return the new guestbook
 	 */
 	@Transactional(enabled = false)
-	public Guestbook createGuestbook(long guestbookId);
+	Guestbook createGuestbook(long guestbookId);
 
 	/**
 	 * @throws PortalException
 	 */
-	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
-		throws PortalException;
+	PersistedModel createPersistedModel(Serializable primaryKeyObj) throws PortalException;
 
 	/**
 	 * Deletes the guestbook from the database. Also notifies the appropriate model listeners.
@@ -108,7 +105,7 @@ public interface GuestbookLocalService
 	 * @return the guestbook that was removed
 	 */
 	@Indexable(type = IndexableType.DELETE)
-	public Guestbook deleteGuestbook(Guestbook guestbook);
+	Guestbook deleteGuestbook(Guestbook guestbook);
 
 	/**
 	 * Deletes the guestbook with the primary key from the database. Also notifies the appropriate model listeners.
@@ -122,23 +119,22 @@ public interface GuestbookLocalService
 	 * @throws PortalException if a guestbook with the primary key could not be found
 	 */
 	@Indexable(type = IndexableType.DELETE)
-	public Guestbook deleteGuestbook(long guestbookId) throws PortalException;
+	Guestbook deleteGuestbook(long guestbookId) throws PortalException;
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
-	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
-		throws PortalException;
+	PersistedModel deletePersistedModel(PersistedModel persistedModel) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public <T> T dslQuery(DSLQuery dslQuery);
+	<T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int dslQueryCount(DSLQuery dslQuery);
+	int dslQueryCount(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public DynamicQuery dynamicQuery();
+	DynamicQuery dynamicQuery();
 
 	/**
 	 * Performs a dynamic query on the database and returns the matching rows.
@@ -147,7 +143,7 @@ public interface GuestbookLocalService
 	 * @return the matching rows
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery);
+	<T> List<T> dynamicQuery(DynamicQuery dynamicQuery);
 
 	/**
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
@@ -162,8 +158,7 @@ public interface GuestbookLocalService
 	 * @return the range of matching rows
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public <T> List<T> dynamicQuery(
-		DynamicQuery dynamicQuery, int start, int end);
+	<T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start, int end);
 
 	/**
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
@@ -179,9 +174,7 @@ public interface GuestbookLocalService
 	 * @return the ordered range of matching rows
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public <T> List<T> dynamicQuery(
-		DynamicQuery dynamicQuery, int start, int end,
-		OrderByComparator<T> orderByComparator);
+	<T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start, int end, OrderByComparator<T> orderByComparator);
 
 	/**
 	 * Returns the number of rows matching the dynamic query.
@@ -190,7 +183,7 @@ public interface GuestbookLocalService
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public long dynamicQueryCount(DynamicQuery dynamicQuery);
+	long dynamicQueryCount(DynamicQuery dynamicQuery);
 
 	/**
 	 * Returns the number of rows matching the dynamic query.
@@ -200,11 +193,10 @@ public interface GuestbookLocalService
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public long dynamicQueryCount(
-		DynamicQuery dynamicQuery, Projection projection);
+	long dynamicQueryCount(DynamicQuery dynamicQuery, Projection projection);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Guestbook fetchGuestbook(long guestbookId);
+	Guestbook fetchGuestbook(long guestbookId);
 
 	/**
 	 * Returns the guestbook matching the UUID and group.
@@ -214,14 +206,13 @@ public interface GuestbookLocalService
 	 * @return the matching guestbook, or <code>null</code> if a matching guestbook could not be found
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Guestbook fetchGuestbookByUuidAndGroupId(String uuid, long groupId);
+	Guestbook fetchGuestbookByUuidAndGroupId(String uuid, long groupId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public ActionableDynamicQuery getActionableDynamicQuery();
+	ActionableDynamicQuery getActionableDynamicQuery();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		PortletDataContext portletDataContext);
+	ExportActionableDynamicQuery getExportActionableDynamicQuery(PortletDataContext portletDataContext);
 
 	/**
 	 * Returns the guestbook with the primary key.
@@ -231,7 +222,7 @@ public interface GuestbookLocalService
 	 * @throws PortalException if a guestbook with the primary key could not be found
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Guestbook getGuestbook(long guestbookId) throws PortalException;
+	Guestbook getGuestbook(long guestbookId) throws PortalException;
 
 	/**
 	 * Returns the guestbook matching the UUID and group.
@@ -242,8 +233,7 @@ public interface GuestbookLocalService
 	 * @throws PortalException if a matching guestbook could not be found
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Guestbook getGuestbookByUuidAndGroupId(String uuid, long groupId)
-		throws PortalException;
+	Guestbook getGuestbookByUuidAndGroupId(String uuid, long groupId) throws PortalException;
 
 	/**
 	 * Returns a range of all the guestbooks.
@@ -257,7 +247,7 @@ public interface GuestbookLocalService
 	 * @return the range of guestbooks
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Guestbook> getGuestbooks(int start, int end);
+	List<Guestbook> getGuestbooks(int start, int end);
 
 	/**
 	 * Returns all the guestbooks matching the UUID and company.
@@ -267,8 +257,7 @@ public interface GuestbookLocalService
 	 * @return the matching guestbooks, or an empty list if no matches were found
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Guestbook> getGuestbooksByUuidAndCompanyId(
-		String uuid, long companyId);
+	List<Guestbook> getGuestbooksByUuidAndCompanyId(String uuid, long companyId);
 
 	/**
 	 * Returns a range of guestbooks matching the UUID and company.
@@ -281,35 +270,31 @@ public interface GuestbookLocalService
 	 * @return the range of matching guestbooks, or an empty list if no matches were found
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Guestbook> getGuestbooksByUuidAndCompanyId(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<Guestbook> orderByComparator);
+	List<Guestbook> getGuestbooksByUuidAndCompanyId(String uuid, long companyId, int start, int end,
+													OrderByComparator<Guestbook> orderByComparator);
 
 	/**
 	 * Returns the number of guestbooks.
-	 *
 	 * @return the number of guestbooks
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getGuestbooksCount();
+	int getGuestbooksCount();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
+	IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
 	/**
 	 * Returns the OSGi service identifier.
-	 *
 	 * @return the OSGi service identifier
 	 */
-	public String getOSGiServiceIdentifier();
+	String getOSGiServiceIdentifier();
 
 	/**
 	 * @throws PortalException
 	 */
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
-		throws PortalException;
+	PersistedModel getPersistedModel(Serializable primaryKeyObj) throws PortalException;
 
 	/**
 	 * Updates the guestbook in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
@@ -322,7 +307,7 @@ public interface GuestbookLocalService
 	 * @return the guestbook that was updated
 	 */
 	@Indexable(type = IndexableType.REINDEX)
-	public Guestbook updateGuestbook(Guestbook guestbook);
+	Guestbook updateGuestbook(Guestbook guestbook);
 
     List<Guestbook> getGuestbooks(long groupId);
 }
